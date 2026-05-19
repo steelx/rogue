@@ -39,14 +39,19 @@ float AExplosiveBarrel::TakeDamage(float DamageAmount, struct FDamageEvent const
 		return ActualDamage;
 	}
 
+	Explode();
+
+	return ActualDamage;
+}
+
+void AExplosiveBarrel::Explode()
+{
 	// initiate burning
 	ActiveBurningSoundComp = UGameplayStatics::SpawnSoundAttached(ActiveBurningSound, Mesh);
 	ActiveBurningEffectComp = UNiagaraFunctionLibrary::SpawnSystemAttached(ActiveBurningEffect, Mesh, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
 
 	// Explode
 	GetWorldTimerManager().SetTimer(ExplosionTriggerTimerHandle, this, &ThisClass::TriggerExplosion, ExplosionTriggerTimerDelay, false);
-
-	return ActualDamage;
 }
 
 void AExplosiveBarrel::TriggerExplosion()
@@ -56,6 +61,8 @@ void AExplosiveBarrel::TriggerExplosion()
 	ActiveBurningSoundComp->Stop();
 
 	RadialForceComp->FireImpulse();
+	Mesh->AddImpulse(FVector::UpVector * ExplosionImpuse, NAME_None, true);
+	Mesh->AddAngularImpulseInDegrees(FVector::RightVector * ExplosionImpuse, NAME_None, true);
 
 	// Visual and Sound effects
 	if (ExplosionEffect)

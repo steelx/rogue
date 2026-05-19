@@ -23,6 +23,8 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable)
+	void Explode();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Barrel")
 	TObjectPtr<UStaticMeshComponent> Mesh;
@@ -51,6 +53,9 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX", meta = (AllowPrivateAccess = true))
 	float ExplosionTriggerTimerDelay {3.f};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX", meta = (AllowPrivateAccess = true))
+	float ExplosionImpuse {500.f};
 
 	FTimerHandle ExplosionTriggerTimerHandle;
 
