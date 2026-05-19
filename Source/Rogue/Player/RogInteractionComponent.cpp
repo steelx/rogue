@@ -58,15 +58,20 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (IsValid(BestActor))
 	{
-		if (IRogInteractableInterface* Interactable = Cast<IRogInteractableInterface>(BestActor))
+		SelectedActor = BestActor;
+		if (bDrawDebugs)
 		{
-			if (bDrawDebugs)
-			{
-				DrawDebugDirectionalArrow(GetWorld(), PawnCenterLoc, BestActor->GetActorLocation(), 2.f, FColor::Green);
-			}
-
-			Interactable->Interact();
+			DrawDebugDirectionalArrow(GetWorld(), PawnCenterLoc, BestActor->GetActorLocation(), 2.f, FColor::Green);
 		}
+	}
+}
+
+void URogInteractionComponent::Interact() const
+{
+	if (!SelectedActor.IsValid()) return;
+	if (IRogInteractableInterface* Interactable = Cast<IRogInteractableInterface>(SelectedActor.Get()))
+	{
+		Interactable->Interact();
 	}
 }
 

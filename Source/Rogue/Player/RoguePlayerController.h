@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "RoguePlayerController.generated.h"
 
+class UInputAction;
 class URogInteractionComponent;
 class UInputMappingContext;
 /**
@@ -27,5 +28,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Rogue|Input")
 	TArray<UInputMappingContext*> DefaultMappingContexts;
 
+	UPROPERTY(EditAnywhere, Category="Rogue|Input")
+	TObjectPtr<UInputAction> InteractAction;
+
 	virtual void SetupInputComponent() override;
+
+private:
+
+	void HandleInteractAction();
 };

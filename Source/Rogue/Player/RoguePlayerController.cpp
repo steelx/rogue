@@ -3,6 +3,7 @@
 
 #include "RoguePlayerController.h"
 
+#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "RogInteractionComponent.h"
 
@@ -27,5 +28,17 @@ void ARoguePlayerController::SetupInputComponent()
 				Subsystem->AddMappingContext(CurrentContext, 0);
 			}
 		}
+	}
+
+	// Input Action Mapping
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &ARoguePlayerController::HandleInteractAction);
+}
+
+void ARoguePlayerController::HandleInteractAction()
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->Interact();
 	}
 }
