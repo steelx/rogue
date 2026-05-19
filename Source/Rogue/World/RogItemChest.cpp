@@ -30,10 +30,11 @@ void ARogItemChest::Tick(float DeltaSeconds)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Pitch reached %f"), CurrentPitch);
 		SetActorTickEnabled(false);
+		BP_InteractionFinished();
 	}
 }
 
-void ARogItemChest::Interact()
+void ARogItemChest::Interact_Implementation()
 {
 	SetActorTickEnabled(true);
 }

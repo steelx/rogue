@@ -19,10 +19,15 @@ public:
 	ARogItemChest();
 
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void Interact() override;
 
+	//~Begin IRogInteractableInterface
+	virtual void Interact_Implementation() override;
+	//~End IRogInteractableInterface
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="InteractionFinished"))
+	void BP_InteractionFinished();
 
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Chest")
 	float RotationPitch {120.f};

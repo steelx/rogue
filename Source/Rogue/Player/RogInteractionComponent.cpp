@@ -69,9 +69,8 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 void URogInteractionComponent::Interact() const
 {
 	if (!SelectedActor.IsValid()) return;
-	if (IRogInteractableInterface* Interactable = Cast<IRogInteractableInterface>(SelectedActor.Get()))
-	{
-		Interactable->Interact();
-	}
+	if (!SelectedActor.Get()->Implements<URogInteractableInterface>()) return;
+
+	IRogInteractableInterface::Execute_Interact(SelectedActor.Get());
 }
 
