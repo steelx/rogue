@@ -24,7 +24,6 @@ public:
 
 	virtual void PostInitializeComponents() override;
 protected:
-	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, Category="Projectile|Components")
 	TObjectPtr<USphereComponent> SphereCollision;

@@ -5,6 +5,7 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,7 +29,6 @@ ARogueProjectileBlackhole::ARogueProjectileBlackhole()
 	SphereCollision->SetCollisionProfileName("OverlapAll");
 
 	MovementComponent->InitialSpeed = 550.f;
-	//InitialLifeSpan = 5.f;
 }
 
 void ARogueProjectileBlackhole::BeginPlay()
@@ -56,6 +56,9 @@ void ARogueProjectileBlackhole::ExplosionSystemFinished(UNiagaraComponent* PSyst
 
 void ARogueProjectileBlackhole::ElapsedTimerFunction()
 {
+	LoopedNiagaraComponent->DestroyInstance();
+	LoopedNiagaraComponent->Deactivate();
+	LoopedAudioComponent->Deactivate();
 	MovementComponent->StopMovementImmediately();
 	ExplosionNiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionEffect, GetActorLocation(), GetActorRotation());
 

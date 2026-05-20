@@ -41,11 +41,7 @@ void ARogueProjectileBase::PostInitializeComponents()
 	SphereCollision->IgnoreActorWhenMoving(GetInstigator(), true);
 }
 
-void ARogueProjectileBase::BeginPlay()
-{
-	Super::BeginPlay();
 
-}
 
 void ARogueProjectileBase::OnComponentOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
