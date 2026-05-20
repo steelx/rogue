@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class ARogueProjectileBlackhole;
 class UNiagaraSystem;
 class ARogProjectileMagic;
 struct FInputActionValue;
@@ -32,6 +33,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/// Primary Attack
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
 	FName PrimaryAttackSocket {"Muzzle_01"};
 
@@ -47,6 +49,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Animation")
 	TObjectPtr<UAnimMontage> PrimaryAttackAnim;
 
+	/// Super Attack
+	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
+	TSubclassOf<ARogueProjectileBlackhole> ProjectileBlackholeClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
+	TObjectPtr<UNiagaraSystem> SuperAttackCastingEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
+	TObjectPtr<USoundBase> SuperAttackCastingSound;
+
+	/// -- Components --
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UCameraComponent> CameraComponent;
 
@@ -68,6 +81,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> PrimaryAttackAction;
 
+	UPROPERTY(EditAnywhere, Category ="Input")
+	TObjectPtr<UInputAction> SuperAttackAction;
+
 
 private:
 	/** Called from Input Actions for movement input */
@@ -78,6 +94,8 @@ private:
 	void LookInput(const FInputActionValue& Value);
 
 	void HandlePrimaryAttack();
+	void HandleSuperAttack();
 
 	void PrimaryAttackTimerElapsed();
+	void SuperAttackTimerElapsed();
 };

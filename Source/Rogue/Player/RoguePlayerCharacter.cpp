@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogProjectileMagic.h"
+#include "Projectiles/RogueProjectileBlackhole.h"
 
 
 // Sets default values
@@ -52,6 +53,7 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::LookInput);
 
 		EnhancedInputComponent->BindAction(PrimaryAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandlePrimaryAttack);
+		EnhancedInputComponent->BindAction(SuperAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleSuperAttack);
 	}
 }
 
@@ -104,6 +106,26 @@ void ARoguePlayerCharacter::HandlePrimaryAttack()
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ThisClass::PrimaryAttackTimerElapsed, AttackTimerDelay, false);
 }
 
+void ARoguePlayerCharacter::HandleSuperAttack()
+{
+	if (!IsValid(ProjectileBlackholeClass)) return;
+
+	PlayAnimMontage(PrimaryAttackAnim);
+
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+		SuperAttackCastingEffect,
+		GetMesh(), PrimaryAttackSocket,
+		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget,
+		true
+	);
+
+	UGameplayStatics::PlaySound2D(this, SuperAttackCastingSound);
+
+	FTimerHandle AttackTimerHandle;
+	constexpr float AttackTimerDelay = 0.2f;
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ThisClass::SuperAttackTimerElapsed, AttackTimerDelay, false);
+}
+
 void ARoguePlayerCharacter::PrimaryAttackTimerElapsed()
 {
 	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
@@ -114,5 +136,17 @@ void ARoguePlayerCharacter::PrimaryAttackTimerElapsed()
 
 	ARogProjectileMagic* ProjectileMagic = GetWorld()->SpawnActor<ARogProjectileMagic>(ProjectileMagicClass, Location, Rotation, SpawnParams);
 	MoveIgnoreActorAdd(ProjectileMagic);
+}
+
+void ARoguePlayerCharacter::SuperAttackTimerElapsed()
+{
+	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
+	const FRotator Rotation = GetControlRotation();
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Instigator = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	ARogueProjectileBlackhole* ProjectileBlackhole = GetWorld()->SpawnActor<ARogueProjectileBlackhole>(ProjectileBlackholeClass, Location, Rotation, SpawnParams);
+	MoveIgnoreActorAdd(ProjectileBlackhole);
 }
 

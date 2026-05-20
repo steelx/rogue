@@ -39,8 +39,6 @@ void ARogueProjectileBase::PostInitializeComponents()
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &ARogueProjectileBase::OnComponentOverlapBegin);
 	SphereCollision->OnComponentHit.AddDynamic(this, &ARogueProjectileBase::OnComponentHit);
 	SphereCollision->IgnoreActorWhenMoving(GetInstigator(), true);
-
-	GetWorldTimerManager().SetTimer(ElapsedTimerHandle, this, &ThisClass::ElapsedTimerFunction, ElapsedTimerDelay, false);
 }
 
 void ARogueProjectileBase::BeginPlay()
@@ -59,18 +57,4 @@ void ARogueProjectileBase::OnComponentOverlapBegin(UPrimitiveComponent* Overlapp
 
 void ARogueProjectileBase::OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-}
-
-void ARogueProjectileBase::ExplosionSystemFinished(UNiagaraComponent* PSystem)
-{
-	Destroy();
-}
-
-void ARogueProjectileBase::ElapsedTimerFunction()
-{
-	MovementComponent->StopMovementImmediately();
-	ExplosionNiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionEffect, GetActorLocation(), GetActorRotation());
-
-	ExplosionNiagaraComp->OnSystemFinished.AddDynamic(this, &ThisClass::ExplosionSystemFinished);
-	UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
 }

@@ -27,9 +27,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, Category="Projectile|Components")
-	TObjectPtr<URadialForceComponent> RadialForceComp;
-
-	UPROPERTY(VisibleAnywhere, Category="Projectile|Components")
 	TObjectPtr<USphereComponent> SphereCollision;
 
 	UPROPERTY(EditDefaultsOnly, Category="Projectile|Components")
@@ -60,12 +57,4 @@ protected:
 
 	UFUNCTION()
 	virtual void OnComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-private:
-	FTimerHandle ElapsedTimerHandle;
-	TObjectPtr<UNiagaraComponent> ExplosionNiagaraComp;
-
-	UFUNCTION()
-	void ExplosionSystemFinished(UNiagaraComponent* PSystem);
-
-	void ElapsedTimerFunction();
 };
