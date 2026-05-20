@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogProjectileMagic.h"
 #include "Projectiles/RogueProjectileBlackhole.h"
+#include "Projectiles/RogueProjectileTeleport.h"
 
 
 // Sets default values
@@ -54,6 +55,7 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		EnhancedInputComponent->BindAction(PrimaryAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandlePrimaryAttack);
 		EnhancedInputComponent->BindAction(SuperAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleSuperAttack);
+		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleTeleportAction);
 	}
 }
 
@@ -126,6 +128,38 @@ void ARoguePlayerCharacter::HandleSuperAttack()
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ThisClass::SuperAttackTimerElapsed, AttackTimerDelay, false);
 }
 
+void ARoguePlayerCharacter::HandleTeleportAction()
+{
+	if (!IsValid(ProjectileTeleportClass)) return;
+
+	PlayAnimMontage(PrimaryAttackAnim);
+
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+		PrimaryAttackCastingEffect,
+		GetMesh(), PrimaryAttackSocket,
+		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget,
+		true
+	);
+
+	UGameplayStatics::PlaySound2D(this, PrimaryAttackCastingSound);
+
+	FTimerHandle AttackTimerHandle;
+	constexpr float AttackTimerDelay = 0.2f;
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ThisClass::TeleportActionTimerElapsed, AttackTimerDelay, false);
+}
+
+void ARoguePlayerCharacter::TeleportActionTimerElapsed()
+{
+	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
+	const FRotator Rotation = GetActorRotation();
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Instigator = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	ARogueProjectileTeleport* ProjectileTeleport = GetWorld()->SpawnActor<ARogueProjectileTeleport>(ProjectileTeleportClass, Location, Rotation, SpawnParams);
+	MoveIgnoreActorAdd(ProjectileTeleport);
+}
+
 void ARoguePlayerCharacter::PrimaryAttackTimerElapsed()
 {
 	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
@@ -141,7 +175,7 @@ void ARoguePlayerCharacter::PrimaryAttackTimerElapsed()
 void ARoguePlayerCharacter::SuperAttackTimerElapsed()
 {
 	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
-	const FRotator Rotation = GetControlRotation();
+	const FRotator Rotation = GetActorForwardVector().Rotation();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

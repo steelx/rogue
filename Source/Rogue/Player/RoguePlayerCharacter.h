@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class ARogueProjectileBase;
 class ARogueProjectileBlackhole;
 class UNiagaraSystem;
 class ARogProjectileMagic;
@@ -59,6 +60,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
 	TObjectPtr<USoundBase> SuperAttackCastingSound;
 
+	/// Teleport Attack
+	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
+	TSubclassOf<ARogueProjectileBase> ProjectileTeleportClass;
+
 	/// -- Components --
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UCameraComponent> CameraComponent;
@@ -84,6 +89,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> SuperAttackAction;
 
+	UPROPERTY(EditAnywhere, Category ="Input")
+	TObjectPtr<UInputAction> TeleportAction;
+
 
 private:
 	/** Called from Input Actions for movement input */
@@ -95,7 +103,9 @@ private:
 
 	void HandlePrimaryAttack();
 	void HandleSuperAttack();
+	void HandleTeleportAction();
 
 	void PrimaryAttackTimerElapsed();
 	void SuperAttackTimerElapsed();
+	void TeleportActionTimerElapsed();
 };
