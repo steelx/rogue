@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "ActionSystem/RogueActionSystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,7 +17,7 @@
 // Sets default values
 ARoguePlayerCharacter::ARoguePlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -24,6 +25,8 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -31,12 +34,6 @@ void ARoguePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-}
-
-// Called every frame
-void ARoguePlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -57,6 +54,14 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(SuperAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleSuperAttack);
 		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleTeleportAction);
 	}
+}
+
+float ARoguePlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	const float DamageTaken = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	ActionSystemComponent->ApplyHealthChange(-DamageTaken);
+
+	return DamageTaken;
 }
 
 void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)

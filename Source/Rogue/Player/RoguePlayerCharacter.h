@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class URogueActionSystemComponent;
 class ARogueProjectileBase;
 class ARogueProjectileBlackhole;
 class UNiagaraSystem;
@@ -24,15 +25,17 @@ public:
 	// Sets default values for this character's properties
 	ARoguePlayerCharacter();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
+	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable)
+	URogueActionSystemComponent* GetActionSystemComponent() const { return ActionSystemComponent; }
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Rogue|ActionSystem")
+	TObjectPtr<URogueActionSystemComponent> ActionSystemComponent;
 
 	/// Primary Attack
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
