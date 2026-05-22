@@ -13,7 +13,7 @@ public class Rogue : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "UMG",
-			"StateTreeModule", "GameplayStateTreeModule",
+			"StateTreeModule", "GameplayStateTreeModule", "GameplayTags",
 			"AIModule", "NavigationSystem"
 		});
 

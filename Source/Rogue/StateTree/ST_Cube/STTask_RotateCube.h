@@ -27,7 +27,7 @@ struct FST_RotateCubeInstanceData
 	float RotatingRate {45.0f};
 };
 
-USTRUCT(meta = (DisplayName = "Rotate Cube"))
+USTRUCT(meta = (DisplayName = "STT Rotate Cube"))
 struct FSTTask_RotateCube : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()

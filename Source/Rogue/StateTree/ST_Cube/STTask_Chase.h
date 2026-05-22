@@ -25,7 +25,7 @@ struct FST_ChaseInstanceData
 	float InterpSpeed {2.f};
 };
 
-USTRUCT(meta = (DisplayName = "Chase Target Pawn"))
+USTRUCT(meta = (DisplayName = "STT Chase Pawn"))
 struct FSTTask_Chase: public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()

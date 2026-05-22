@@ -1,0 +1,13 @@
+﻿#include "MyTags.h"
+
+
+namespace MyTags
+{
+	/** InputTags **/
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_None, "MyTags.InputTag.None");
+
+
+	/** Events **/
+	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Spotted, "MyTags.Event.TargetPawn.Spotted");
+	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Lost, "MyTags.Event.TargetPawn.Lost");
+}

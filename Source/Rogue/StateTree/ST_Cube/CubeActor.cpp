@@ -5,6 +5,7 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/StateTreeComponent.h"
+#include "Core/MyTags.h"
 
 
 ACubeActor::ACubeActor()
@@ -37,6 +38,12 @@ void ACubeActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	if (APawn* SpottedPawn = Cast<APawn>(OtherActor))
 	{
 		TargetPawn = SpottedPawn;
+
+		// Send event to State Tree to switch to "Chasing" state
+		FStateTreeEvent PredEvent;
+		PredEvent.Tag = MyTags::Event_TargetPawn_Spotted;
+		StateTreeComponent->SendStateTreeEvent(PredEvent);
+		UE_LOG(LogTemp, Warning, TEXT("Sensed: Event_TargetPawn_Spotted"));
 	}
 }
 
@@ -45,5 +52,11 @@ void ACubeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	if (Cast<APawn>(OtherActor) == TargetPawn)
 	{
 		TargetPawn = nullptr;
+
+		// Send event to State Tree to exit to "Chasing" state
+		FStateTreeEvent PredEvent;
+		PredEvent.Tag = MyTags::Event_TargetPawn_Lost;
+		StateTreeComponent->SendStateTreeEvent(PredEvent);
+		UE_LOG(LogTemp, Warning, TEXT("Sensed: Event_TargetPawn_Lost"));
 	}
 }
