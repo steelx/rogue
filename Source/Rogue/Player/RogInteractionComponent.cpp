@@ -3,7 +3,7 @@
 
 #include "RogInteractionComponent.h"
 
-#include "RogueGameTypes.h"
+#include "Core/RogueGameTypes.h"
 #include "Engine/OverlapResult.h"
 #include "Rogue/Interfaces/RogInteractableInterface.h"
 

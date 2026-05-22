@@ -10,7 +10,12 @@ public class Rogue : ModuleRules
 
 		PublicIncludePaths.Add("Rogue");
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "UMG",
+			"StateTreeModule", "GameplayStateTreeModule",
+			"AIModule", "NavigationSystem"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
