@@ -1,5 +1,6 @@
 ﻿#include "STTask_MoveToPatrolPoint.h"
 
+#include "CubeActor.h"
 #include "StateTreeExecutionContext.h"
 #include "Engine/TargetPoint.h"
 #include "StateTree/RogPatrolPointManager.h"
@@ -28,6 +29,7 @@ EStateTreeRunStatus FSTTask_MoveToPatrolPoint::Tick(FStateTreeExecutionContext& 
 	const FVector CurrentLocation = InstanceData.OwningActor->GetActorLocation();
 	if (FVector::Dist(CurrentLocation, InstanceData.PatrolPointLocation) <= InstanceData.AcceptanceRadius)
 	{
+		InstanceData.OwningActor->LookChance = FMath::RandRange(0.0f, 1.0f);
 		return EStateTreeRunStatus::Succeeded;
 	}
 

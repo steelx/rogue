@@ -4,11 +4,9 @@
 #include "RogueProjectileBase.h"
 
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 
 ARogueProjectileBase::ARogueProjectileBase()

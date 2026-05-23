@@ -6,6 +6,7 @@
 #include "StateTreeTaskBase.h"
 #include "STTask_MoveToPatrolPoint.generated.h"
 
+class ACubeActor;
 class ARogPatrolPointManager;
 
 USTRUCT()
@@ -15,7 +16,7 @@ struct FST_MoveToPatrolPointInstanceData
 
 	/// CONTEXT
 	UPROPERTY(EditAnywhere, Category = "Context")
-	TObjectPtr<AActor> OwningActor;
+	TObjectPtr<ACubeActor> OwningActor;
 
 	/// INPUT
 	UPROPERTY(EditAnywhere, Category="Input")

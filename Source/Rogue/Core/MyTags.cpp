@@ -10,4 +10,5 @@ namespace MyTags
 	/** Events **/
 	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Spotted, "MyTags.Event.TargetPawn.Spotted");
 	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Lost, "MyTags.Event.TargetPawn.Lost");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Owner_RotationFinished, "MyTags.Event.Owner.RotationFinished");
 }
