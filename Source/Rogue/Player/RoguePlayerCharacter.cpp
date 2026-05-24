@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Core/RogueGameTypes.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -14,6 +15,7 @@
 #include "Projectiles/RogueProjectileBlackhole.h"
 #include "Projectiles/RogueProjectileTeleport.h"
 
+TAutoConsoleVariable<bool> CVarLineTraceDebugDrawing(TEXT("game.lineTrace.DebugDraw"), false, TEXT("Enable line trace drawing. (0 = off, 1 = enabled)"), ECVF_Cheat);
 
 // Sets default values
 ARoguePlayerCharacter::ARoguePlayerCharacter()
@@ -169,14 +171,36 @@ void ARoguePlayerCharacter::TeleportActionTimerElapsed()
 
 void ARoguePlayerCharacter::PrimaryAttackTimerElapsed()
 {
-	const FVector Location = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
-	const FRotator Rotation = GetControlRotation();
+	UWorld* World = GetWorld();
+	const FVector SpawnLocation = GetMesh()->GetSocketLocation(PrimaryAttackSocket);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Instigator = this;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	ARogProjectileMagic* ProjectileMagic = GetWorld()->SpawnActor<ARogProjectileMagic>(ProjectileMagicClass, Location, Rotation, SpawnParams);
+	constexpr float LineTraceDist = 3000.f;
+	const FVector EyeLocation = CameraComponent->GetComponentLocation();
+	const FRotator EyeRotation = GetControlRotation();
+	const FVector TraceEndLocation = EyeLocation + (EyeRotation.Vector()*LineTraceDist);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+
+	FHitResult Hit;
+	const bool bBlockingHit = World->LineTraceSingleByChannel(Hit, EyeLocation, TraceEndLocation, PROJECTILE_OBJ_CHANNEL, QueryParams);
+	FVector AdjustedLocation = bBlockingHit ? Hit.Location : TraceEndLocation;
+
+	FRotator SpawnRotation = (AdjustedLocation - SpawnLocation).Rotation();
+	ARogProjectileMagic* ProjectileMagic = World->SpawnActor<ARogProjectileMagic>(ProjectileMagicClass, SpawnLocation, SpawnRotation, SpawnParams);
 	MoveIgnoreActorAdd(ProjectileMagic);
+
+	const bool bDebugDraw = CVarLineTraceDebugDrawing.GetValueOnGameThread();
+	if (bDebugDraw)
+	{
+		DrawDebugBox(World, AdjustedLocation, FVector(20.f), FColor::Emerald,false, 5.f);// Line trace HIT location
+		DrawDebugLine(World, EyeLocation, TraceEndLocation, FColor::Green, false, 5.f);// without hit path
+		DrawDebugLine(World, SpawnLocation, AdjustedLocation, FColor::Yellow, false, 5.f);// adjusted projectile path
+		DrawDebugLine(World, SpawnLocation, SpawnLocation+(GetControlRotation().Vector()*LineTraceDist), FColor::Red, false, 5.f);// Original projectile path
+	}
 }
 
 void ARoguePlayerCharacter::SuperAttackTimerElapsed()
