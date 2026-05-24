@@ -37,7 +37,7 @@ void ARoguePlayerController::SetupInputComponent()
 
 void ARoguePlayerController::HandleInteractAction()
 {
-	if (InteractionComponent)
+	if (GetPawn()->InputEnabled())
 	{
 		InteractionComponent->Interact();
 	}

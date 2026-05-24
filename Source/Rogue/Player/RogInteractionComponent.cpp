@@ -7,6 +7,7 @@
 #include "Engine/OverlapResult.h"
 #include "Rogue/Interfaces/RogInteractableInterface.h"
 
+TAutoConsoleVariable<bool> CVarInteractionDebugDrawing(TEXT("game.interaction.DebugDraw"), false, TEXT("Enable debug drawing. (0 = off, 1 = enabled)"), ECVF_Cheat);
 
 URogInteractionComponent::URogInteractionComponent()
 {
@@ -25,10 +26,9 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	FCollisionShape CollisionShape;
 	CollisionShape.SetSphere(InteractionRadius);
 
+	const bool bDrawDebugs = CVarInteractionDebugDrawing.GetValueOnGameThread();
 	// Debug draws
-#if WITH_EDITOR
 	if (bDrawDebugs) DrawDebugSphere(GetWorld(), PawnCenterLoc, InteractionRadius, 12, FColor::White);
-#endif
 
 	TArray<FOverlapResult> OutOverlaps;
 	GetWorld()->OverlapMultiByChannel(OutOverlaps, PawnCenterLoc, FQuat::Identity, CollisionChannel, CollisionShape);

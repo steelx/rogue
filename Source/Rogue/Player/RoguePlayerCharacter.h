@@ -25,7 +25,7 @@ public:
 	// Sets default values for this character's properties
 	ARoguePlayerCharacter();
 
-	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -52,6 +52,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Animation")
 	TObjectPtr<UAnimMontage> PrimaryAttackAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category="Rogue|Animation")
+	TObjectPtr<UAnimMontage> DeathAnimMontage;
 
 	/// Super Attack
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
@@ -111,4 +114,7 @@ private:
 	void PrimaryAttackTimerElapsed();
 	void SuperAttackTimerElapsed();
 	void TeleportActionTimerElapsed();
+
+	UFUNCTION()
+	void HandleHealthChanged(float NewHealth, float OldHealth);
 };

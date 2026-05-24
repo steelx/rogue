@@ -7,6 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogProjectileMagic.h"
@@ -29,12 +30,13 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
 }
 
-// Called when the game starts or when spawned
-void ARoguePlayerCharacter::BeginPlay()
+void ARoguePlayerCharacter::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
 
+	ActionSystemComponent->OnHealthChanged.AddDynamic(this, &ThisClass::HandleHealthChanged);
 }
+
 
 // Called to bind functionality to input
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -189,3 +191,13 @@ void ARoguePlayerCharacter::SuperAttackTimerElapsed()
 	MoveIgnoreActorAdd(ProjectileBlackhole);
 }
 
+void ARoguePlayerCharacter::HandleHealthChanged(float NewHealth, float OldHealth)
+{
+	// Died?
+	if (FMath::IsNearlyZero(NewHealth))
+	{
+		DisableInput(nullptr);
+		GetMovementComponent()->StopMovementImmediately();
+		PlayAnimMontage(DeathAnimMontage);
+	}
+}

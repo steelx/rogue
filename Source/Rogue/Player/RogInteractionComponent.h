@@ -23,9 +23,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Interaction")
 	float InteractionRadius {400.f};
 
-	UPROPERTY(EditDefaultsOnly, Category="Interaction")
-	bool bDrawDebugs {false};
-
 private:
 	TSoftObjectPtr<AActor> SelectedActor;
 };
