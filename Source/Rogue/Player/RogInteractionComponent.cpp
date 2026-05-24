@@ -20,7 +20,8 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	const APlayerController* PC = CastChecked<APlayerController>(GetOwner());
-	const FVector PawnCenterLoc = PC->GetPawn()->GetActorLocation();
+	const FVector PawnCenter = PC->GetPawn()->GetActorLocation();
+	const FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
 
 	constexpr ECollisionChannel CollisionChannel = INTERACTION_TRACE_CHANNEL;
 	FCollisionShape CollisionShape;
@@ -28,31 +29,41 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	const bool bDrawDebugs = CVarInteractionDebugDrawing.GetValueOnGameThread();
 	// Debug draws
-	if (bDrawDebugs) DrawDebugSphere(GetWorld(), PawnCenterLoc, InteractionRadius, 12, FColor::White);
+	if (bDrawDebugs) DrawDebugSphere(GetWorld(), PawnCenter, InteractionRadius, 12, FColor::White);
 
 	TArray<FOverlapResult> OutOverlaps;
-	GetWorld()->OverlapMultiByChannel(OutOverlaps, PawnCenterLoc, FQuat::Identity, CollisionChannel, CollisionShape);
+	GetWorld()->OverlapMultiByChannel(OutOverlaps, PawnCenter, FQuat::Identity, CollisionChannel, CollisionShape);
 
 	// Interactable
 	AActor* BestActor = nullptr;
-	float HighestDotResult = -1;
+	float HighestWeight = 0.f;
 
 	for (FOverlapResult& OverlapResult : OutOverlaps)
 	{
-		FVector OverlapLocation = OverlapResult.GetActor()->GetActorLocation();
-		FVector OverlapDirection = (OverlapLocation - PawnCenterLoc).GetSafeNormal();
-		const float DotResult = FVector::DotProduct(OverlapDirection, PC->GetControlRotation().Vector());
+		// Get Object Bounds center, rather than center returned due to Mesh Pivot
+		FVector Origin; FVector BoxExtent;
+		OverlapResult.GetActor()->GetActorBounds(true, Origin, BoxExtent);
 
-		if (DotResult > HighestDotResult)
+		// FVector OverlapLocation = OverlapResult.GetActor()->GetActorLocation();
+		FVector OverlapDirection = (Origin - CameraLocation).GetSafeNormal();
+
+		const float DotResult = FVector::DotProduct(OverlapDirection, PC->GetControlRotation().Vector());// -1 to 1
+		const float NormalizedDotResult = DotResult * 0.5f + 0.5f;// 0 to 1
+
+		const float DistanceTo = (PawnCenter - Origin).Size();// 0 to Interaction Radius (400)
+		const float NormalizedDistance = 1.0f - (DistanceTo / InteractionRadius);// 0 to 1 will become 1 to 0
+
+		const float Weight = NormalizedDotResult + NormalizedDistance;
+		if (Weight > HighestWeight)
 		{
-			HighestDotResult = DotResult;
+			HighestWeight = Weight;
 			BestActor = OverlapResult.GetActor();
 		}
 
 		if (bDrawDebugs)
 		{
-			DrawDebugBox(GetWorld(), OverlapLocation, FVector(55.f), FColor::Red);
-			DrawDebugString(GetWorld(), OverlapLocation, FString::Printf(TEXT("Dot: %f"), DotResult), nullptr, FColor::Cyan, 0,  true, 2.f);
+			DrawDebugBox(GetWorld(), Origin, FVector(55.f), FColor::Red);
+			DrawDebugString(GetWorld(), Origin, FString::Printf(TEXT("Weight: %f"), Weight), nullptr, FColor::Cyan, 0,  true, 2.f);
 		}
 	}
 
@@ -61,7 +72,7 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		SelectedActor = BestActor;
 		if (bDrawDebugs)
 		{
-			DrawDebugDirectionalArrow(GetWorld(), PawnCenterLoc, BestActor->GetActorLocation(), 2.f, FColor::Green);
+			DrawDebugDirectionalArrow(GetWorld(), PawnCenter, BestActor->GetActorLocation(), 2.f, FColor::Green);
 		}
 	}
 }
