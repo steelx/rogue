@@ -13,7 +13,10 @@ struct FRogueAttributesSet
 {
 	GENERATED_BODY()
 
-	FRogueAttributesSet(): Health(100.f) {}
+	FRogueAttributesSet(): HealthMax(100.f), Health(100.f) {}
+
+	UPROPERTY(BlueprintReadOnly)
+	float HealthMax;
 
 	UPROPERTY(BlueprintReadOnly)
 	float Health;
@@ -29,7 +32,7 @@ public:
 	// Sets default values for this component's properties
 	URogueActionSystemComponent();
 
-	void ApplyHealthChange(float InValue);
+	bool ApplyHealthChange(float InValue);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthAttributesChangedSignature OnHealthChanged;
