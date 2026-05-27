@@ -14,11 +14,24 @@ URogInteractionComponent::URogInteractionComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
-void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void URogInteractionComponent::BeginPlay()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::BeginPlay();
 
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &URogInteractionComponent::PerformInteractionTrace, TimerDelay, true);
+}
+
+
+void URogInteractionComponent::Interact() const
+{
+	if (!SelectedActor.IsValid()) return;
+	if (!SelectedActor.Get()->Implements<URogInteractableInterface>()) return;
+
+	IRogInteractableInterface::Execute_Interact(SelectedActor.Get());
+}
+
+void URogInteractionComponent::PerformInteractionTrace()
+{
 	const APlayerController* PC = CastChecked<APlayerController>(GetOwner());
 	const FVector PawnCenter = PC->GetPawn()->GetActorLocation();
 	const FVector CameraLocation = PC->PlayerCameraManager->GetCameraLocation();
@@ -29,7 +42,7 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	const bool bDrawDebugs = CVarInteractionDebugDrawing.GetValueOnGameThread();
 	// Debug draws
-	if (bDrawDebugs) DrawDebugSphere(GetWorld(), PawnCenter, InteractionRadius, 12, FColor::White);
+	if (bDrawDebugs) DrawDebugSphere(GetWorld(), PawnCenter, InteractionRadius, 12, FColor::White, false, TimerDelay);
 
 	TArray<FOverlapResult> OutOverlaps;
 	GetWorld()->OverlapMultiByChannel(OutOverlaps, PawnCenter, FQuat::Identity, CollisionChannel, CollisionShape);
@@ -48,7 +61,7 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		FVector OverlapDirection = (Origin - CameraLocation).GetSafeNormal();
 
 		const float DotResult = FVector::DotProduct(OverlapDirection, PC->GetControlRotation().Vector());// -1 to 1
-		const float NormalizedDotResult = DotResult * 0.5f + 0.5f;// 0 to 1
+		const float NormalizedDotResult = DotResult * 0.5f + 0.5;// 0 to 1
 
 		const float DistanceTo = (PawnCenter - Origin).Size();// 0 to Interaction Radius (400)
 		const float NormalizedDistance = 1.0f - (DistanceTo / InteractionRadius);// 0 to 1 will become 1 to 0
@@ -62,8 +75,8 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 		if (bDrawDebugs)
 		{
-			DrawDebugBox(GetWorld(), Origin, FVector(55.f), FColor::Red);
-			DrawDebugString(GetWorld(), Origin, FString::Printf(TEXT("Weight: %f"), Weight), nullptr, FColor::Cyan, 0,  true, 2.f);
+			DrawDebugBox(GetWorld(), Origin, FVector(55.f), FColor::Red, false, TimerDelay);
+			DrawDebugString(GetWorld(), Origin, FString::Printf(TEXT("Weight: %f"), Weight), nullptr, FColor::Cyan, TimerDelay,  true, 2.f);
 		}
 	}
 
@@ -72,16 +85,8 @@ void URogInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		SelectedActor = BestActor;
 		if (bDrawDebugs)
 		{
-			DrawDebugDirectionalArrow(GetWorld(), PawnCenter, BestActor->GetActorLocation(), 2.f, FColor::Green);
+			DrawDebugDirectionalArrow(GetWorld(), PawnCenter, BestActor->GetActorLocation(), 2.f, FColor::Green, false, TimerDelay);
 		}
 	}
-}
-
-void URogInteractionComponent::Interact() const
-{
-	if (!SelectedActor.IsValid()) return;
-	if (!SelectedActor.Get()->Implements<URogInteractableInterface>()) return;
-
-	IRogInteractableInterface::Execute_Interact(SelectedActor.Get());
 }
 
