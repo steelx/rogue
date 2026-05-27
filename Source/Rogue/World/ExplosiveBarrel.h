@@ -50,13 +50,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX")
 	TObjectPtr<USoundBase> ExplosionSound;
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|Damage")
+	TSubclassOf<UDamageType> ExplosionDamageType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX")
 	float ExplosionTriggerTimerDelay {3.f};
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX", meta = (AllowPrivateAccess = true))
-	float ExplosionImpuse {500.f};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|FX")
+	float ExplosionImpulse {500.f};
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|Damage")
+	float ExplosionDamage {90.f};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Barrel|Damage")
+	float ExplosionDamageRadius {500.f};
+
+private:
 	FTimerHandle ExplosionTriggerTimerHandle;
 
 	bool bExploded = false;

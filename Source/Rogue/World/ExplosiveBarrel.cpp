@@ -18,6 +18,7 @@ AExplosiveBarrel::AExplosiveBarrel()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionProfileName(TEXT("Physics Actor"));
+	Mesh->SetCanEverAffectNavigation(false);
 	SetRootComponent(Mesh);
 
 	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
@@ -61,8 +62,8 @@ void AExplosiveBarrel::TriggerExplosion()
 	ActiveBurningSoundComp->Stop();
 
 	RadialForceComp->FireImpulse();
-	Mesh->AddImpulse(FVector::UpVector * ExplosionImpuse, NAME_None, true);
-	Mesh->AddAngularImpulseInDegrees(FVector::RightVector * ExplosionImpuse, NAME_None, true);
+	Mesh->AddImpulse(FVector::UpVector * ExplosionImpulse, NAME_None, true);
+	Mesh->AddAngularImpulseInDegrees(FVector::RightVector * ExplosionImpulse, NAME_None, true);
 
 	// Visual and Sound effects
 	if (ExplosionEffect)
@@ -70,4 +71,17 @@ void AExplosiveBarrel::TriggerExplosion()
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 		UGameplayStatics::SpawnSoundAtLocation(this, ExplosionSound, GetActorLocation());
 	}
+
+	// Apply radial damage to all nearby Pawns (Player, enemies, etc.)
+	UGameplayStatics::ApplyRadialDamage(
+		this,
+		ExplosionDamage,
+		GetActorLocation(),
+		ExplosionDamageRadius,
+		ExplosionDamageType,
+		TArray<AActor*>(),
+		this,
+		nullptr,
+		false
+	);
 }
