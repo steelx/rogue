@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Core/RogBaseCharacter.h"
 #include "RoguePlayerCharacter.generated.h"
 
 class URogueActionSystemComponent;
@@ -17,7 +17,7 @@ class USpringArmComponent;
 class UCameraComponent;
 
 UCLASS()
-class ROGUE_API ARoguePlayerCharacter : public ACharacter
+class ROGUE_API ARoguePlayerCharacter : public ARogBaseCharacter
 {
 	GENERATED_BODY()
 
@@ -25,17 +25,9 @@ public:
 	// Sets default values for this character's properties
 	ARoguePlayerCharacter();
 
-	virtual void PostInitializeComponents() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	UFUNCTION(BlueprintCallable)
-	URogueActionSystemComponent* GetActionSystemComponent() const { return ActionSystemComponent; }
-
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Rogue|ActionSystem")
-	TObjectPtr<URogueActionSystemComponent> ActionSystemComponent;
 
 	/// Primary Attack
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
@@ -99,6 +91,8 @@ protected:
 	TObjectPtr<UInputAction> TeleportAction;
 
 
+	virtual void HandleHealthChanged(float NewHealth, float OldHealth) override;
+
 private:
 	/** Called from Input Actions for movement input */
 	void MoveInput(const FInputActionValue& Value);
@@ -114,7 +108,4 @@ private:
 	void PrimaryAttackTimerElapsed();
 	void SuperAttackTimerElapsed();
 	void TeleportActionTimerElapsed();
-
-	UFUNCTION()
-	void HandleHealthChanged(float NewHealth, float OldHealth);
 };

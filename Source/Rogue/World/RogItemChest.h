@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/Interfaces/RogInteractableInterface.h"
 #include "GameFramework/Actor.h"
-#include "Rogue/Interfaces/RogInteractableInterface.h"
 #include "RogItemChest.generated.h"
 
 class UStaticMeshComponent;

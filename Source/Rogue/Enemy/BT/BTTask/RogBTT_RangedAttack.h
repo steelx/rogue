@@ -17,13 +17,10 @@ class ROGUE_API URogBTT_RangedAttack : public UBTTaskNode
 
 public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
-
-	/** Called when the character's AnimNotify fires the gameplay event */
-	UFUNCTION()
-	void OnGameplayEventReceived();
 
 protected:
+	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
+
 	UPROPERTY(EditAnywhere, Category = "BTTask")
 	TObjectPtr<UAnimMontage> AttackMontage;
 
@@ -45,4 +42,8 @@ private:
 
 	/** Cached character we're controlling */
 	TWeakObjectPtr<ACharacter> CachedCharacter;
+
+	/** Called when the character's AnimNotify fires the gameplay event */
+	UFUNCTION()
+	void OnGameplayEventReceived();
 };

@@ -37,6 +37,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthAttributesChangedSignature OnHealthChanged;
 
+	FRogueAttributesSet GetAttributesSet() const { return Attributes; }
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="ActionSystem|Attributes")
 	FRogueAttributesSet Attributes;

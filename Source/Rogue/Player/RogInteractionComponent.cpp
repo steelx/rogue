@@ -4,8 +4,8 @@
 #include "RogInteractionComponent.h"
 
 #include "Core/RogueGameTypes.h"
+#include "Core/Interfaces/RogInteractableInterface.h"
 #include "Engine/OverlapResult.h"
-#include "Rogue/Interfaces/RogInteractableInterface.h"
 
 TAutoConsoleVariable<bool> CVarInteractionDebugDrawing(TEXT("game.interaction.DebugDraw"), false, TEXT("Enable debug drawing. (0 = off, 1 = enabled)"), ECVF_Cheat);
 

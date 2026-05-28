@@ -29,16 +29,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
-	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
 }
-
-void ARoguePlayerCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	ActionSystemComponent->OnHealthChanged.AddDynamic(this, &ThisClass::HandleHealthChanged);
-}
-
 
 // Called to bind functionality to input
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -58,14 +49,6 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(SuperAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleSuperAttack);
 		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleTeleportAction);
 	}
-}
-
-float ARoguePlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	const float DamageTaken = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	ActionSystemComponent->ApplyHealthChange(-DamageTaken);
-
-	return DamageTaken;
 }
 
 void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
