@@ -21,15 +21,14 @@ void URogAbilitySystemComponent::OnAbilityInputPressed(const FGameplayTag& InInp
 
 		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InInputTag))
 		{
-			// convert const Ability Spec to Pointer FoundSpec
-			FGameplayAbilitySpec* FoundSpec = FindAbilitySpecFromHandle(AbilitySpec.Handle);
-			if (!FoundSpec) continue;
-
-			if (FoundSpec->IsActive())
+			// convert const Ability Spec to Pointer MutableSpec
+			FGameplayAbilitySpec* MutableSpec = FindAbilitySpecFromHandle(AbilitySpec.Handle);
+			if (!MutableSpec) continue;
+			if (MutableSpec->IsActive())
 			{
-				AbilitySpecInputPressed(*FoundSpec);
+				AbilitySpecInputPressed(*MutableSpec);
 			}
-			TryActivateAbility(FoundSpec->Handle);
+			TryActivateAbility(MutableSpec->Handle);
 		}
 		// DO NOT break here! Allow the loop to check if other abilities share this input tag.
 	}
@@ -95,6 +94,8 @@ void URogAbilitySystemComponent::OnRep_ActivateAbilities()
 void URogAbilitySystemComponent::HandleAutoActivatedAbility(const FGameplayAbilitySpec& AbilitySpec)
 {
 	if (!IsValid(AbilitySpec.Ability)) return;
+	// below early return on the server, as OnRep fire on the client and calls HandleAutoActivatedAbility
+	if (!IsOwnerActorAuthoritative()) return;
 
 	for (const FGameplayTag& Tag : AbilitySpec.Ability->GetAssetTags())
 	{

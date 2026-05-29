@@ -7,6 +7,7 @@
 #include "RogPatrolPointManager.generated.h"
 
 class ATargetPoint;
+class UBillboardComponent;
 
 UCLASS()
 class ROGUE_API ARogPatrolPointManager : public AActor
@@ -16,12 +17,11 @@ class ROGUE_API ARogPatrolPointManager : public AActor
 public:
 	ARogPatrolPointManager();
 
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintCallable)
 	ATargetPoint* GetNextPatrolPoint();
 
 protected:
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Manager|Components")
 	TObjectPtr<UBillboardComponent> BillboardIcon;
