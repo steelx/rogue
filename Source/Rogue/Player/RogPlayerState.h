@@ -29,6 +29,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Rogue|AbilitySystem")
 	TObjectPtr<URogAbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(VisibleAnywhere, Category="Rogue|AbilitySystem")
+	UPROPERTY()
 	TObjectPtr<URogAttributeSet> AttributeSet;
 };

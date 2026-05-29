@@ -20,27 +20,31 @@ class ROGUE_API ARogEnemyCharacter : public ARogBaseCharacter
 public:
 	// Sets default values for this character's properties
 	ARogEnemyCharacter();
-	virtual void PossessedBy(AController* NewController) override;
+	virtual void BeginPlay() override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	FORCEINLINE URogAbilitySystemComponent* GetRogAbilitySystemComponent() const { return AbilitySystemComponent; }
-	FORCEINLINE URogAttributeSet* GetAttributeSet() const { return AttributeSet; }
+	URogAbilitySystemComponent* GetRogAbilitySystemComponent() const;
+	URogAttributeSet* GetAttributeSet() const;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated)
+	bool bIsBeingLaunched{false};
 
 	/** Broadcast when the AnimNotify in the RangedAttack montage fires */
 	UPROPERTY(BlueprintAssignable, Category = "Rogue|Events")
 	FRogOnRangedAttackEventDelegate OnRangedAttackEvent;
 
 protected:
-#pragma region Components
+#pragma region AbilitySystem
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rogue|AbilitySystem")
 	TObjectPtr<URogAbilitySystemComponent> AbilitySystemComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AbilitySystem")
+	UPROPERTY()
 	TObjectPtr<URogAttributeSet> AttributeSet;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="AbilitySystem|CharacterData")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Rogue|AbilitySystem")
 	TSoftObjectPtr<UDataAsset_StartupDataBase> StartupData;
-#pragma endregion Components
+#pragma endregion AbilitySystem
 
 };

@@ -21,12 +21,21 @@ void UDataAsset_StartupDataBase::GiveToAbilitySystemComponent(URogAbilitySystemC
 		for (const TSubclassOf<UGameplayEffect>& GEClass : StartupGameplayEffects)
 		{
 			if (!IsValid(GEClass)) continue;
-			// class default object
+			// Make EffectSpec and Apply to InASC
 			UGameplayEffect* EffectCDO = GEClass->GetDefaultObject<UGameplayEffect>();
 			InASC->ApplyGameplayEffectToSelf(EffectCDO, Level, InASC->MakeEffectContext());
-		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Startup Attributes Initialized for %s."), *InASC->GetName());
+			FString DebugString = FString::Printf(
+		TEXT("Applied GE [%s] -> [%s]\n"), *GEClass->GetName(), *GetNameSafe(InASC->GetAvatarActor()));
+			for (const FGameplayModifierInfo& Modifier : EffectCDO->Modifiers)
+			{
+				DebugString += FString::Printf(
+					TEXT("  - %s (%s)\n"),
+					*Modifier.Attribute.AttributeName,
+					*StaticEnum<EGameplayModOp::Type>()->GetNameStringByValue(Modifier.ModifierOp));
+			}
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *DebugString);
+		}
 	}
 }
 
@@ -34,7 +43,6 @@ void UDataAsset_StartupDataBase::GrantAbilities(const TArray<TSubclassOf<UGamepl
 {
 	if (InAbilities.IsEmpty()) return;
 
-	// TODO: change UGameplayAbility to my custom GameplayAbilityBase
 	for (const TSubclassOf<UGameplayAbility>& Ability : InAbilities)
 	{
 		if (!IsValid(Ability)) continue;

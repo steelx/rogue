@@ -23,6 +23,7 @@ void ARogEnemyAIController::BeginPlay()
 	}
 	RunBehaviorTree(BehaviorTree);
 
+	// TODO: this is temp, wont work on client
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	checkf(IsValid(PlayerPawn), TEXT("Player Pawn not found in AI Controller!"));
 

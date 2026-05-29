@@ -26,13 +26,14 @@ EBTNodeResult::Type URogBTT_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerC
 			const float CurrentHealth = ASC->GetNumericAttribute(URogAttributeSet::GetHealthAttribute());
 			const float MaxHealth = ASC->GetNumericAttribute(URogAttributeSet::GetMaxHealthAttribute());
 
+			UE_LOG(LogTemp, Error, TEXT("AI Healing CurrentHealth: %f, MaxHealth: %f"), CurrentHealth, MaxHealth);
 			if (CurrentHealth > MaxHealth)
 			{
 				const float ClampedHeal = FMath::Min(HealAmount, MaxHealth - CurrentHealth);
 				// Directly add to the Health attribute
 				ASC->ApplyModToAttribute(URogAttributeSet::GetHealthAttribute(), EGameplayModOp::Additive, ClampedHeal);
 
-				UE_LOG(LogTemp, Log, TEXT("Enemy healed. New Health: %f"), ClampedHeal);
+				UE_LOG(LogTemp, Warning, TEXT("Enemy healed. New Health: %f"), ClampedHeal);
 			}
 
 			return EBTNodeResult::Succeeded;

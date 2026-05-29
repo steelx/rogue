@@ -35,10 +35,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 UAbilitySystemComponent* ARoguePlayerCharacter::GetAbilitySystemComponent() const
 {
-	const ARogPlayerState* RogPlayerState = Cast<ARogPlayerState>(GetPlayerState());
-	if (!IsValid(RogPlayerState)) return nullptr;
-
-	return RogPlayerState->GetAbilitySystemComponent();
+	return GetRogAbilitySystemComponent();
 }
 
 URogAbilitySystemComponent* ARoguePlayerCharacter::GetRogAbilitySystemComponent() const
