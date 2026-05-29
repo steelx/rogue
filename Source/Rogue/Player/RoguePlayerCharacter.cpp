@@ -10,7 +10,6 @@
 #include "Camera/CameraComponent.h"
 #include "Core/RogueGameTypes.h"
 #include "DataAssets/StartupData/DataAsset_StartupDataBase.h"
-#include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogProjectileMagic.h"
@@ -68,7 +67,7 @@ void ARoguePlayerCharacter::PossessedBy(AController* NewController)
 		if (UDataAsset_StartupDataBase* LoadedData = StartupData.LoadSynchronous())
 		{
 			LoadedData->GiveToAbilitySystemComponent(GetRogAbilitySystemComponent());
-			UE_LOG(LogTemp, Warning, TEXT("AHeroCharacter:PossessedBy Loaded Startup Data: %s"), *GetName());
+			// UE_LOG(LogTemp, Warning, TEXT("AHeroCharacter:PossessedBy Loaded Startup Data: %s"), *GetName());
 		}
 	}
 }

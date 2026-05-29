@@ -5,6 +5,7 @@ namespace MyTags
 {
 	/** InputTags **/
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_None, "MyTags.InputTag.None");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "MyTags.InputTag.Interact");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Heavy, "MyTags.InputTag.Attack.Heavy");
 
 

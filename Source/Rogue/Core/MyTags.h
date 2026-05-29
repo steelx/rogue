@@ -6,6 +6,7 @@ namespace MyTags
 {
 	/** InputTags **/
 	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_None);
+	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Interact);
 	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Attack_Heavy);
 
 

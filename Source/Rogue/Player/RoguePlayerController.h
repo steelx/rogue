@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "RoguePlayerController.generated.h"
 
+struct FGameplayTag;
+class UDataAsset_InputConfig;
 class UInputAction;
 class URogInteractionComponent;
 class UInputMappingContext;
@@ -25,8 +27,8 @@ protected:
 	TObjectPtr<URogInteractionComponent> InteractionComponent;
 
 	/** Input Mapping Contexts */
-	UPROPERTY(EditAnywhere, Category="Rogue|Input")
-	TArray<UInputMappingContext*> DefaultMappingContexts;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Rogue|Input")
+	TObjectPtr<UDataAsset_InputConfig> InputConfigDataAsset;
 
 	UPROPERTY(EditAnywhere, Category="Rogue|Input")
 	TObjectPtr<UInputAction> InteractAction;
@@ -34,6 +36,10 @@ protected:
 	virtual void SetupInputComponent() override;
 
 private:
-
 	void HandleInteractAction();
+
+	void Handle_AbilityInputPressed(FGameplayTag InputTag);
+	void Handle_AbilityInputReleased(FGameplayTag InputTag);
+
+	void ActivateAbility(const FGameplayTag& MyTag) const;
 };
