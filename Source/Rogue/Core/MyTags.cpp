@@ -8,6 +8,8 @@ namespace MyTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "MyTags.InputTag.Interact");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Heavy, "MyTags.InputTag.Attack.Heavy");
 
+	UE_DEFINE_GAMEPLAY_TAG(Abilities_ActivateOnGiven, "MyTags.Abilities.ActivateOnGiven");
+
 
 	/** Events **/
 	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Spotted, "MyTags.Event.TargetPawn.Spotted");

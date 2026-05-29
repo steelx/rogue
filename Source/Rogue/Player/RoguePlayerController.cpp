@@ -6,6 +6,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "RogInteractionComponent.h"
+#include "RoguePlayerCharacter.h"
+#include "AbilitySystem/RogAbilitySystemComponent.h"
 #include "Core/MyTags.h"
 #include "Core/Components/RogInputComponent.h"
 
@@ -57,12 +59,14 @@ void ARoguePlayerController::HandleInteractAction()
 
 void ARoguePlayerController::Handle_AbilityInputPressed(FGameplayTag InputTag)
 {
+	const ARoguePlayerCharacter* RoguePlayerCharacter = Cast<ARoguePlayerCharacter>(GetPawn());
+	URogAbilitySystemComponent* ASC = Cast<URogAbilitySystemComponent>(RoguePlayerCharacter->GetRogAbilitySystemComponent());
+	ASC->OnAbilityInputPressed(InputTag);
 }
 
 void ARoguePlayerController::Handle_AbilityInputReleased(FGameplayTag InputTag)
 {
-}
-
-void ARoguePlayerController::ActivateAbility(const FGameplayTag& MyTag) const
-{
+	const ARoguePlayerCharacter* RoguePlayerCharacter = Cast<ARoguePlayerCharacter>(GetPawn());
+	URogAbilitySystemComponent* ASC = Cast<URogAbilitySystemComponent>(RoguePlayerCharacter->GetRogAbilitySystemComponent());
+	ASC->OnAbilityInputReleased(InputTag);
 }

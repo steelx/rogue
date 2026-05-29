@@ -9,6 +9,8 @@ namespace MyTags
 	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Interact);
 	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Attack_Heavy);
 
+	/** Abilities **/
+	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Abilities_ActivateOnGiven);
 
 	/** Events **/
 	ROGUE_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_TargetPawn_Spotted);

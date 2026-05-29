@@ -13,8 +13,8 @@ class ROGUE_API URogAbilitySystemComponent : public UAbilitySystemComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
-	URogAbilitySystemComponent();
+	void OnAbilityInputPressed(const FGameplayTag& InInputTag);
+	void OnAbilityInputReleased(const FGameplayTag& InInputTag);
 
 	/**
 	 * Creates a dynamically evaluated Gameplay Effect Spec for dealing damage.
@@ -26,4 +26,11 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	FGameplayEffectSpecHandle MakeDamageEffectSpec(TSubclassOf<UGameplayEffect> EffectClass, float InBaseDamage, FGameplayTag InCurrentAttackTypeTag = FGameplayTag(), int32 InCurrentComboCount = 1) const;
+
+protected:
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	virtual void OnRep_ActivateAbilities() override;
+
+private:
+	void HandleAutoActivatedAbility(const FGameplayAbilitySpec& AbilitySpec);
 };

@@ -40,6 +40,4 @@ private:
 
 	void Handle_AbilityInputPressed(FGameplayTag InputTag);
 	void Handle_AbilityInputReleased(FGameplayTag InputTag);
-
-	void ActivateAbility(const FGameplayTag& MyTag) const;
 };
