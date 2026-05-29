@@ -23,9 +23,16 @@ void ARogEnemyAIController::BeginPlay()
 	}
 	RunBehaviorTree(BehaviorTree);
 
-	// TODO: this is temp, wont work on client
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	checkf(IsValid(PlayerPawn), TEXT("Player Pawn not found in AI Controller!"));
-
-	GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), PlayerPawn);
+	// Find the first valid Player Pawn on the server safely
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			if (APawn* PlayerPawn = PC->GetPawn())
+			{
+				GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), PlayerPawn);
+				break; // Found our target, exit the loop
+			}
+		}
+	}
 }

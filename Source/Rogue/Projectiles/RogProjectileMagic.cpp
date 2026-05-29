@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/RogAbilitySystemComponent.h"
 #include "Core/MyTags.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,26 +32,21 @@ void ARogProjectileMagic::OnComponentHit(UPrimitiveComponent* HitComponent, AAct
 	// const FVector HitFromDirection = GetActorRotation().Vector();
 	// UGameplayStatics::ApplyPointDamage(OtherActor, 10.f, HitFromDirection, Hit, GetInstigatorController(), this, DamageTypeClass);
 
-	if (OtherActor)
+	// Target who got HIT should not create its own EffectSpec, but the instigator (the one dealing the damage).
+	if (OtherActor && DamageEffectClass)
 	{
-		// Apply Damage using Gameplay Effect (GE) to the Target Actor
-		if (IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(OtherActor))
+		IAbilitySystemInterface* TargetASI = Cast<IAbilitySystemInterface>(OtherActor);
+		IAbilitySystemInterface* InstigatorASI = Cast<IAbilitySystemInterface>(GetInstigator());
+		if (TargetASI && InstigatorASI)
 		{
-			if (UAbilitySystemComponent* TargetASC = ASI->GetAbilitySystemComponent())
+			URogAbilitySystemComponent* TargetASC = Cast<URogAbilitySystemComponent>(TargetASI->GetAbilitySystemComponent());
+			URogAbilitySystemComponent* InstigatorASC = Cast<URogAbilitySystemComponent>(InstigatorASI->GetAbilitySystemComponent());
+			if (TargetASC && InstigatorASC)
 			{
-				if (DamageEffectClass)
+				const FGameplayEffectSpecHandle EffectSpec = InstigatorASC->MakeDamageEffectSpec(DamageEffectClass, DamageAmount);
+				if (EffectSpec.IsValid())
 				{
-					FGameplayEffectContextHandle EffectContext = TargetASC->MakeEffectContext();
-					EffectContext.AddInstigator(GetInstigator(), this);
-
-					// Create the Gameplay Effect Spec
-					FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, EffectContext);
-					if (EffectSpecHandle.IsValid())
-					{
-						// Pass the damage value dynamically using a SetByCaller tag (e.g., Shared_SetByCaller_BaseDamage)
-						EffectSpecHandle.Data->SetSetByCallerMagnitude(MyTags::Shared_SetByCaller_BaseDamage, DamageAmount);
-						TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-					}
+					InstigatorASC->ApplyGameplayEffectSpecToTarget(*EffectSpec.Data.Get(), TargetASC);
 				}
 			}
 		}

@@ -14,7 +14,7 @@ URogAbilitySystemComponent::URogAbilitySystemComponent()
 
 }
 
-FGameplayEffectSpecHandle URogAbilitySystemComponent::MakePlayerDamageEffectSpec(TSubclassOf<UGameplayEffect> EffectClass, float InBaseDamage, FGameplayTag InCurrentAttackTypeTag, int32 InCurrentComboCount) const
+FGameplayEffectSpecHandle URogAbilitySystemComponent::MakeDamageEffectSpec(TSubclassOf<UGameplayEffect> EffectClass, float InBaseDamage, FGameplayTag InCurrentAttackTypeTag, int32 InCurrentComboCount) const
 {
 	check(EffectClass);
 
@@ -27,7 +27,6 @@ FGameplayEffectSpecHandle URogAbilitySystemComponent::MakePlayerDamageEffectSpec
 		EffectClass, 1, ContextHandle
 	);
 
-	EffectSpecHandle.Data->SetSetByCallerMagnitude(MyTags::Shared_SetByCaller_BaseDamage, InBaseDamage);
 
 	if (InCurrentAttackTypeTag.IsValid())
 	{

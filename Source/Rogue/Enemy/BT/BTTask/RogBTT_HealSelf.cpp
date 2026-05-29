@@ -27,7 +27,7 @@ EBTNodeResult::Type URogBTT_HealSelf::ExecuteTask(UBehaviorTreeComponent& OwnerC
 			const float MaxHealth = ASC->GetNumericAttribute(URogAttributeSet::GetMaxHealthAttribute());
 
 			UE_LOG(LogTemp, Error, TEXT("AI Healing CurrentHealth: %f, MaxHealth: %f"), CurrentHealth, MaxHealth);
-			if (CurrentHealth > MaxHealth)
+			if (!FMath::IsNearlyZero(CurrentHealth) && CurrentHealth < MaxHealth)
 			{
 				const float ClampedHeal = FMath::Min(HealAmount, MaxHealth - CurrentHealth);
 				// Directly add to the Health attribute

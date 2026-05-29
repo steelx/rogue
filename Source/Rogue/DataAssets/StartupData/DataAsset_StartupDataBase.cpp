@@ -21,10 +21,14 @@ void UDataAsset_StartupDataBase::GiveToAbilitySystemComponent(URogAbilitySystemC
 		for (const TSubclassOf<UGameplayEffect>& GEClass : StartupGameplayEffects)
 		{
 			if (!IsValid(GEClass)) continue;
-			// Make EffectSpec and Apply to InASC
-			UGameplayEffect* EffectCDO = GEClass->GetDefaultObject<UGameplayEffect>();
-			InASC->ApplyGameplayEffectToSelf(EffectCDO, Level, InASC->MakeEffectContext());
 
+			FGameplayEffectContextHandle ContextHandle = InASC->MakeEffectContext();
+			ContextHandle.AddInstigator(InASC->GetAvatarActor(), InASC->GetAvatarActor());
+			FGameplayEffectSpecHandle EffectSpecHandle = InASC->MakeOutgoingSpec(GEClass, Level, ContextHandle);
+			InASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+
+			// Retrieve the CDO purely for iterating the base Modifiers for our Debug Log
+			const UGameplayEffect* EffectCDO = GEClass->GetDefaultObject<UGameplayEffect>();
 			FString DebugString = FString::Printf(
 		TEXT("Applied GE [%s] -> [%s]\n"), *GEClass->GetName(), *GetNameSafe(InASC->GetAvatarActor()));
 			for (const FGameplayModifierInfo& Modifier : EffectCDO->Modifiers)
