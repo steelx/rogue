@@ -11,7 +11,7 @@
 #include "Net/UnrealNetwork.h"
 
 
-ARogEnemyCharacter::ARogEnemyCharacter()
+ARogEnemyCharacter::ARogEnemyCharacter(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = false;
 

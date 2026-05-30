@@ -6,6 +6,7 @@
 #include "Core/RogBaseCharacter.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class UCustomMovementComponent;
 class UDataAsset_StartupDataBase;
 class URogAbilitySystemComponent;
 class URogAttributeSet;
@@ -24,8 +25,7 @@ class ROGUE_API ARoguePlayerCharacter : public ARogBaseCharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	ARoguePlayerCharacter();
+	ARoguePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
@@ -81,6 +81,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCustomMovementComponent> CustomMovementComponent;
 #pragma endregion  Components
 
 #pragma region InputActions

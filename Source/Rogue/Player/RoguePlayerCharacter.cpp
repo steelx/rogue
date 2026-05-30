@@ -9,6 +9,7 @@
 #include "RogPlayerState.h"
 #include "AbilitySystem/RogAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CustomMovementComponent.h"
 #include "Core/RogueGameTypes.h"
 #include "DataAssets/StartupData/DataAsset_StartupDataBase.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -19,8 +20,8 @@
 
 TAutoConsoleVariable<bool> CVarLineTraceDebugDrawing(TEXT("game.lineTrace.DebugDraw"), false, TEXT("Enable line trace drawing. (0 = off, 1 = enabled)"), ECVF_Cheat);
 
-// Sets default values
-ARoguePlayerCharacter::ARoguePlayerCharacter()
+ARoguePlayerCharacter::ARoguePlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomMovementComponent>(CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -31,6 +32,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
+	CustomMovementComponent = Cast<UCustomMovementComponent>(GetCharacterMovement());
 }
 
 UAbilitySystemComponent* ARoguePlayerCharacter::GetAbilitySystemComponent() const

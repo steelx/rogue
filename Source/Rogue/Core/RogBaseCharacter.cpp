@@ -7,7 +7,7 @@
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
-ARogBaseCharacter::ARogBaseCharacter()
+ARogBaseCharacter::ARogBaseCharacter(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = false;
 

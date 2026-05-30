@@ -19,8 +19,7 @@ class ROGUE_API ARogEnemyCharacter : public ARogBaseCharacter
 
 public:
 	// Sets default values for this character's properties
-	ARogEnemyCharacter();
-	virtual void BeginPlay() override;
+	ARogEnemyCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -36,6 +35,8 @@ public:
 	FRogOnRangedAttackEventDelegate OnRangedAttackEvent;
 
 protected:
+	virtual void BeginPlay() override;
+
 #pragma region AbilitySystem
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Rogue|AbilitySystem")
 	TObjectPtr<URogAbilitySystemComponent> AbilitySystemComponent;
