@@ -3,15 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
-#include "Interfaces/RogActionSystemInterface.h"
 #include "RogBaseCharacter.generated.h"
 
-class URogueActionSystemComponent;
+struct FOnAttributeChangeData;
+class UGameplayEffect;
 class AController;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FASCInitialized, UAbilitySystemComponent*, ASC, UAttributeSet*, Attributes);
+
 UCLASS()
-class ROGUE_API ARogBaseCharacter : public ACharacter, public IRogActionSystemInterface
+class ROGUE_API ARogBaseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -19,18 +22,32 @@ public:
 	// Sets default values for this character's properties
 	ARogBaseCharacter();
 
-	virtual void PostInitializeComponents() override;
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	//~Begin IRogActionSystemInterface
+	//~Begin IAbilitySystemInterface
 	UFUNCTION(BlueprintCallable)
-	virtual URogueActionSystemComponent* GetActionSystemComponent() const override { return ActionSystemComponent; }
-	//~End IRogActionSystemInterface
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	//~End IAbilitySystemInterface
+
+	bool IsAlive() const { return bAlive; }
+	void SetAlive(bool bAliveStatus) { bAlive = bAliveStatus; }
+	UPROPERTY(BlueprintAssignable)
+	FASCInitialized OnASCInitialized;
+
+	UFUNCTION(BlueprintCallable, Category = "Crash|Death")
+	virtual void HandleRespawn();
+
+	UFUNCTION(BlueprintCallable, Category = "Crash|Attributes")
+	void ResetAttributes();
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Rogue|ActionSystem")
-	TObjectPtr<URogueActionSystemComponent> ActionSystemComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Crash|Effects")
+	TSubclassOf<UGameplayEffect> ResetAttributesEffect;
 
-	UFUNCTION()
-	virtual void HandleHealthChanged(float NewHealth, float OldHealth);
+	void OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData);
+	virtual void HandleDeath();
+
+private:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Replicated)
+	bool bAlive = true;
 };

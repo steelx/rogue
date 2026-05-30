@@ -7,6 +7,7 @@
 #include "World/RogPickupActor.h"
 #include "RogHealthPotion.generated.h"
 
+class UGameplayEffect;
 class UNiagaraSystem;
 class UStaticMeshComponent;
 class USphereComponent;
@@ -24,6 +25,9 @@ public:
 	virtual void PostInitializeComponents() override;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile|GAS")
+	TSubclassOf<UGameplayEffect> HealingEffectClass;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="HealthPotion|Healing")
 	float HealAmount {100.f};
 

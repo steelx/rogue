@@ -3,7 +3,11 @@
 
 #include "RogProjectileMagic.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/RogAbilitySystemComponent.h"
+#include "Core/MyTags.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -11,7 +15,6 @@
 ARogProjectileMagic::ARogProjectileMagic()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
 }
 
 void ARogProjectileMagic::PostInitializeComponents()
@@ -26,10 +29,30 @@ void ARogProjectileMagic::OnComponentHit(UPrimitiveComponent* HitComponent, AAct
 {
 	Super::OnComponentHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 
-	const FVector HitFromDirection = GetActorRotation().Vector();
-	UGameplayStatics::ApplyPointDamage(OtherActor, 10.f, HitFromDirection, Hit, GetInstigatorController(), this, DamageTypeClass);
+	// const FVector HitFromDirection = GetActorRotation().Vector();
+	// UGameplayStatics::ApplyPointDamage(OtherActor, 10.f, HitFromDirection, Hit, GetInstigatorController(), this, DamageTypeClass);
 
-	// spawn particles & Sound
+	// Target who got HIT should not create its own EffectSpec, but the instigator (the one dealing the damage).
+	if (OtherActor && DamageEffectClass)
+	{
+		IAbilitySystemInterface* TargetASI = Cast<IAbilitySystemInterface>(OtherActor);
+		IAbilitySystemInterface* InstigatorASI = Cast<IAbilitySystemInterface>(GetInstigator());
+		if (TargetASI && InstigatorASI)
+		{
+			URogAbilitySystemComponent* TargetASC = Cast<URogAbilitySystemComponent>(TargetASI->GetAbilitySystemComponent());
+			URogAbilitySystemComponent* InstigatorASC = Cast<URogAbilitySystemComponent>(InstigatorASI->GetAbilitySystemComponent());
+			if (TargetASC && InstigatorASC)
+			{
+				const FGameplayEffectSpecHandle EffectSpec = InstigatorASC->MakeDamageEffectSpec(DamageEffectClass, DamageAmount);
+				if (EffectSpec.IsValid())
+				{
+					InstigatorASC->ApplyGameplayEffectSpecToTarget(*EffectSpec.Data.Get(), TargetASC);
+				}
+			}
+		}
+	}
+
+	// Visuals & Destruction
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplosionEffect, GetActorLocation());
 	UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
 

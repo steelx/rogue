@@ -4,11 +4,13 @@
 #include "RoguePlayerCharacter.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "NiagaraFunctionLibrary.h"
-#include "ActionSystem/RogueActionSystemComponent.h"
+#include "RogPlayerState.h"
+#include "AbilitySystem/RogAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Core/RogueGameTypes.h"
-#include "GameFramework/PawnMovementComponent.h"
+#include "DataAssets/StartupData/DataAsset_StartupDataBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectiles/RogProjectileMagic.h"
@@ -31,6 +33,54 @@ ARoguePlayerCharacter::ARoguePlayerCharacter()
 
 }
 
+UAbilitySystemComponent* ARoguePlayerCharacter::GetAbilitySystemComponent() const
+{
+	return GetRogAbilitySystemComponent();
+}
+
+URogAbilitySystemComponent* ARoguePlayerCharacter::GetRogAbilitySystemComponent() const
+{
+	const ARogPlayerState* RogPlayerState = Cast<ARogPlayerState>(GetPlayerState());
+	if (!IsValid(RogPlayerState)) return nullptr;
+
+	return RogPlayerState->GetRogAbilitySystemComponent();
+}
+
+URogAttributeSet* ARoguePlayerCharacter::GetAttributeSet() const
+{
+	const ARogPlayerState* RogPlayerState = Cast<ARogPlayerState>(GetPlayerState());
+	if (!IsValid(RogPlayerState)) return nullptr;
+
+	return RogPlayerState->GetAttributeSet();
+}
+
+void ARoguePlayerCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!IsValid(GetAbilitySystemComponent())) return;
+	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
+
+	ensureMsgf(!StartupData.IsNull(), TEXT("StartupData is null in %s. Please assign a valid DataAsset_StartupDataBase."), *GetName());
+
+	if (!StartupData.IsNull())
+	{
+		if (UDataAsset_StartupDataBase* LoadedData = StartupData.LoadSynchronous())
+		{
+			LoadedData->GiveToAbilitySystemComponent(GetRogAbilitySystemComponent());
+			// UE_LOG(LogTemp, Warning, TEXT("AHeroCharacter:PossessedBy Loaded Startup Data: %s"), *GetName());
+		}
+	}
+}
+
+void ARoguePlayerCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (!IsValid(GetAbilitySystemComponent())) return;
+	GetAbilitySystemComponent()->InitAbilityActorInfo(GetPlayerState(), this);
+}
+
 // Called to bind functionality to input
 void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -50,6 +100,7 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleTeleportAction);
 	}
 }
+
 
 void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
 {
@@ -198,13 +249,13 @@ void ARoguePlayerCharacter::SuperAttackTimerElapsed()
 	MoveIgnoreActorAdd(ProjectileBlackhole);
 }
 
-void ARoguePlayerCharacter::HandleHealthChanged(float NewHealth, float OldHealth)
-{
-	// Died?
-	if (FMath::IsNearlyZero(NewHealth))
-	{
-		DisableInput(nullptr);
-		GetMovementComponent()->StopMovementImmediately();
-		PlayAnimMontage(DeathAnimMontage);
-	}
-}
+// void ARoguePlayerCharacter::HandleHealthChanged(float NewHealth, float OldHealth)
+// {
+// 	// Died?
+// 	if (FMath::IsNearlyZero(NewHealth))
+// 	{
+// 		DisableInput(nullptr);
+// 		GetMovementComponent()->StopMovementImmediately();
+// 		PlayAnimMontage(DeathAnimMontage);
+// 	}
+// }

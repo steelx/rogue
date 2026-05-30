@@ -3,33 +3,54 @@
 
 #include "RogBaseCharacter.h"
 
-#include "ActionSystem/RogueActionSystemComponent.h"
-
+#include "AbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ARogBaseCharacter::ARogBaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	ActionSystemComponent = CreateDefaultSubobject<URogueActionSystemComponent>(TEXT("ActionSystemComponent"));
+	// Tick and refresh bone transforms whether rendered or not - for bone updates on a dedicated server
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 }
 
-void ARogBaseCharacter::PostInitializeComponents()
+void ARogBaseCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::PostInitializeComponents();
-
-	ActionSystemComponent->OnHealthChanged.AddDynamic(this, &ARogBaseCharacter::HandleHealthChanged);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, bAlive);
 }
 
-float ARogBaseCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+UAbilitySystemComponent* ARogBaseCharacter::GetAbilitySystemComponent() const
 {
-	const float DamageTaken = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	ActionSystemComponent->ApplyHealthChange(-DamageTaken);
-
-	return DamageTaken;
+	return nullptr;
 }
 
-void ARogBaseCharacter::HandleHealthChanged(float NewHealth, float OldHealth)
+void ARogBaseCharacter::OnHealthChanged(const FOnAttributeChangeData& AttributeChangeData)
 {
-	UE_LOG(LogTemp, Verbose, TEXT("ARogBaseCharacter Health changed: %f"), NewHealth);
+	if (AttributeChangeData.NewValue <= 0.f)
+	{
+		HandleDeath();
+	}
+}
+
+void ARogBaseCharacter::HandleDeath()
+{
+	bAlive = false;
+	UE_LOG(LogTemp, Warning, TEXT("RogBaseCharacter Died: %s"), *GetName());
+}
+
+void ARogBaseCharacter::HandleRespawn()
+{
+	bAlive = true;
+}
+
+void ARogBaseCharacter::ResetAttributes()
+{
+	checkf(IsValid(ResetAttributesEffect), TEXT("ResetAttributesEffect not set."));
+	if (!IsValid(GetAbilitySystemComponent())) return;
+
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(ResetAttributesEffect, 1.f, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }

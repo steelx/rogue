@@ -3,10 +3,11 @@
 
 #include "RogBTS_IsLowHealth.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "AIController.h"
-#include "ActionSystem/RogueActionSystemComponent.h"
+#include "AbilitySystem/RogAttributeSet.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Core/Interfaces/RogActionSystemInterface.h"
 
 void URogBTS_IsLowHealth::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
@@ -18,13 +19,15 @@ void URogBTS_IsLowHealth::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	APawn* OwnerPawn = AIC->GetPawn();
 	if (!OwnerPawn) return;
 
-	if (IRogActionSystemInterface* ASI = Cast<IRogActionSystemInterface>(OwnerPawn))
+	if (IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(OwnerPawn))
 	{
-		URogueActionSystemComponent* ActionSystemComponent = ASI->GetActionSystemComponent();
-		if (ensure(ActionSystemComponent))
+		UAbilitySystemComponent* ASC = ASI->GetAbilitySystemComponent();
+		if (ensure(ASC))
 		{
 			UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
-			BBComp->SetValueAsFloat(CurrentHealthKey.SelectedKeyName, ActionSystemComponent->GetAttributesSet().Health);
+
+			const float Health = ASC->GetNumericAttribute(URogAttributeSet::GetHealthAttribute());
+			BBComp->SetValueAsFloat(CurrentHealthKey.SelectedKeyName, Health);
 		}
 	}
 }

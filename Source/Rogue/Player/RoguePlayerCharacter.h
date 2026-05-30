@@ -6,7 +6,9 @@
 #include "Core/RogBaseCharacter.h"
 #include "RoguePlayerCharacter.generated.h"
 
-class URogueActionSystemComponent;
+class UDataAsset_StartupDataBase;
+class URogAbilitySystemComponent;
+class URogAttributeSet;
 class ARogueProjectileBase;
 class ARogueProjectileBlackhole;
 class UNiagaraSystem;
@@ -25,9 +27,19 @@ public:
 	// Sets default values for this character's properties
 	ARoguePlayerCharacter();
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	URogAbilitySystemComponent* GetRogAbilitySystemComponent() const;
+	URogAttributeSet* GetAttributeSet() const;
 protected:
+
+	// Assign PlayerStartupDataBase which will call prototype DataAsset_PlayerStartupData::GiveToAbilitySystemComponent
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="AbilitySystem|CharacterData")
+	TSoftObjectPtr<UDataAsset_StartupDataBase> StartupData;
 
 	/// Primary Attack
 	UPROPERTY(EditDefaultsOnly, Category="Rogue|Projectile")
@@ -63,12 +75,15 @@ protected:
 	TSubclassOf<ARogueProjectileBase> ProjectileTeleportClass;
 
 	/// -- Components --
+#pragma region Components
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<UCameraComponent> CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
+#pragma endregion  Components
 
+#pragma region InputActions
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> JumpAction;
@@ -89,9 +104,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> TeleportAction;
+#pragma endregion InputActions
 
-
-	virtual void HandleHealthChanged(float NewHealth, float OldHealth) override;
 
 private:
 	/** Called from Input Actions for movement input */

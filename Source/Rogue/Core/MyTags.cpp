@@ -5,6 +5,11 @@ namespace MyTags
 {
 	/** InputTags **/
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_None, "MyTags.InputTag.None");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "MyTags.InputTag.Interact");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Heavy, "MyTags.InputTag.Attack.Heavy");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Primary, "MyTags.InputTag.Attack.Primary");
+
+	UE_DEFINE_GAMEPLAY_TAG(Abilities_ActivateOnGiven, "MyTags.Abilities.ActivateOnGiven");
 
 
 	/** Events **/
@@ -12,4 +17,7 @@ namespace MyTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_TargetPawn_Lost, "MyTags.Event.TargetPawn.Lost");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Owner_RotationFinished, "MyTags.Event.Owner.RotationFinished");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Owner_Attack_Ranged, "MyTags.Event.Owner.Attack.Ranged");
+
+	/** Shared Tags **/
+	UE_DEFINE_GAMEPLAY_TAG(Shared_SetByCaller_BaseDamage, "MyTags.Shared.SetByCaller.BaseDamage");
 }

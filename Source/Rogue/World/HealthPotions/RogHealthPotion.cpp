@@ -3,11 +3,14 @@
 
 #include "RogHealthPotion.h"
 
+#include "AbilitySystemComponent.h"
+#include "GameplayEffect.h"
 #include "NiagaraFunctionLibrary.h"
 #include "ActionSystem/RogueActionSystemComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Core/MyTags.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/RoguePlayerCharacter.h"
 
@@ -42,22 +45,38 @@ void ARogHealthPotion::OnActorOverlapped(UPrimitiveComponent* OverlappedComponen
 {
 	Super::OnActorOverlapped(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	if (ARoguePlayerCharacter* Player = Cast<ARoguePlayerCharacter>(OtherActor))
+	// we will only allow Player Character to heal
+	ARoguePlayerCharacter* Player = Cast<ARoguePlayerCharacter>(OtherActor);
+	if (!IsValid(Player)) return;
+
+	// if (IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(OtherActor))
+	UAbilitySystemComponent* ASC = Player->GetAbilitySystemComponent();
+	if (!ASC || !IsValid(HealingEffectClass)) return;
+
+	// Apply Damage Gameplay Effect via ASC
+	FGameplayEffectContextHandle ContextHandle = ASC->MakeEffectContext();
+	ContextHandle.AddSourceObject(this);
+
+	FGameplayEffectSpecHandle EffectSpecHandle = ASC->MakeOutgoingSpec(HealingEffectClass, 1, ContextHandle);
+
+	if (EffectSpecHandle.IsValid())
 	{
-		if (Player->GetActionSystemComponent()->ApplyHealthChange(HealAmount))
-		{
-			LoopingAudioComp->Deactivate();
-
-			UGameplayStatics::PlaySoundAtLocation(this, HealingSound, GetActorLocation());
-			UNiagaraFunctionLibrary::SpawnSystemAttached(
-				HealingEffect, Player->GetMesh(), FName("Muzzle_01"),
-				FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget,
-			true
-			);
-
-			Destroy();
-		}
+		// Dynamically set the healing magnitude
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(MyTags::Shared_SetByCaller_BaseDamage, HealAmount);
+		ASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+
+	// VFX
+	LoopingAudioComp->Deactivate();
+
+	UGameplayStatics::PlaySoundAtLocation(this, HealingSound, GetActorLocation());
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+		HealingEffect, Player->GetMesh(), FName("Muzzle_01"),
+		FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget,
+	true
+	);
+
+	Destroy();
 }
 
 void ARogHealthPotion::MeshAnimTimelineFinished()
