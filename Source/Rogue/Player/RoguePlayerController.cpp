@@ -45,7 +45,6 @@ void ARoguePlayerController::SetupInputComponent()
 	RogInputComponent->BindNativeInputAction(InputConfigDataAsset, MyTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ARoguePlayerController::HandleInteractAction);
 
 	// Bind Ability Input Tags Activation - DataAssets HeroInputAbilities Actions
-	RogInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Handle_AbilityInputPressed, &ThisClass::Handle_AbilityInputPressed);
 	RogInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Handle_AbilityInputPressed, &ThisClass::Handle_AbilityInputReleased);
 }
 
