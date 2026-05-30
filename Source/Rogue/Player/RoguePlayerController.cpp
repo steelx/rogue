@@ -24,10 +24,10 @@ void ARoguePlayerController::SetupInputComponent()
 	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (!IsValid(InputSubsystem)) return;
 
-	// for (UInputMappingContext* Context : DefaultMappingContexts)
-	// {
-	// 	InputSubsystem->AddMappingContext(Context, 0);
-	// }
+	for (UInputMappingContext* Context : DefaultMappingContexts)
+	{
+		InputSubsystem->AddMappingContext(Context, 0);
+	}
 
 	// priority zero, so we can add other contexts later with higher priority
 	InputSubsystem->AddMappingContext(InputConfigDataAsset->DefaultMappingContext, 0);
@@ -45,6 +45,7 @@ void ARoguePlayerController::SetupInputComponent()
 	RogInputComponent->BindNativeInputAction(InputConfigDataAsset, MyTags::InputTag_Interact, ETriggerEvent::Triggered, this, &ARoguePlayerController::HandleInteractAction);
 
 	// Bind Ability Input Tags Activation - DataAssets HeroInputAbilities Actions
+	RogInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Handle_AbilityInputPressed, &ThisClass::Handle_AbilityInputPressed);
 	RogInputComponent->BindAbilityInputAction(InputConfigDataAsset, this, &ThisClass::Handle_AbilityInputPressed, &ThisClass::Handle_AbilityInputReleased);
 }
 

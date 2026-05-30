@@ -4,6 +4,7 @@
 #include "RoguePlayerCharacter.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "NiagaraFunctionLibrary.h"
 #include "RogPlayerState.h"
 #include "AbilitySystem/RogAbilitySystemComponent.h"

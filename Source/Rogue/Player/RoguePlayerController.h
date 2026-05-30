@@ -27,6 +27,9 @@ protected:
 	TObjectPtr<URogInteractionComponent> InteractionComponent;
 
 	/** Input Mapping Contexts */
+	UPROPERTY(EditAnywhere, Category="Rogue|Input")
+	TArray<UInputMappingContext*> DefaultMappingContexts;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Rogue|Input")
 	TObjectPtr<UDataAsset_InputConfig> InputConfigDataAsset;
 

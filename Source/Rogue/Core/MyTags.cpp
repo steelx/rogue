@@ -7,6 +7,7 @@ namespace MyTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_None, "MyTags.InputTag.None");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Interact, "MyTags.InputTag.Interact");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Heavy, "MyTags.InputTag.Attack.Heavy");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack_Primary, "MyTags.InputTag.Attack.Primary");
 
 	UE_DEFINE_GAMEPLAY_TAG(Abilities_ActivateOnGiven, "MyTags.Abilities.ActivateOnGiven");
 
