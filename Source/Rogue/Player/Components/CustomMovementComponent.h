@@ -75,6 +75,7 @@ protected:
 	void StopClimbing();
 	void PhysicsClimb(const float DeltaTime, const int32 Iterations);
 	void ProcessClimbableSurfaceInfo();
+	bool CheckShouldStopClimbing() const;
 	FQuat GetClimbRotation(const float DeltaTime) const;
 	void SnapMovementToClimbableSurfaces(const float DeltaTime) const;
 

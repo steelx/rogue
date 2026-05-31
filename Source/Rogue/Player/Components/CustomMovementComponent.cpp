@@ -146,7 +146,10 @@ void UCustomMovementComponent::PhysicsClimb(const float DeltaTime, const int32 I
 	ProcessClimbableSurfaceInfo();
 
 	/** 2. Check if we should stop Climbing **/
-	// ...
+	if (CheckShouldStopClimbing())
+	{
+		StopClimbing();
+	}
 
 	RestorePreAdditiveRootMotionVelocity();
 
@@ -194,6 +197,18 @@ void UCustomMovementComponent::ProcessClimbableSurfaceInfo()
 
 	CurrentClimbableSurfaceLocation /= ClimbableSurfacesTracedResults.Num();// get average location
 	CurrentClimbableSurfaceNormal = CurrentClimbableSurfaceNormal.GetSafeNormal();
+}
+
+bool UCustomMovementComponent::CheckShouldStopClimbing() const
+{
+	if (ClimbableSurfacesTracedResults.IsEmpty()) return true;
+
+	// when we are at Top Edge, the top of the cube is UpVector and the existing Climb Wall is the Surface Normal
+	// If both Vectors are Up which is 90 deg angle their Dot product is 1.
+	const float DotResult = FVector::DotProduct(CurrentClimbableSurfaceNormal, FVector::UpVector);
+	// Is the slope too steep? Acos(1) to Degrees = 0, desired is 90.
+	const float DegreesSlope = FMath::RadiansToDegrees(FMath::Acos(DotResult));
+	return DegreesSlope <= 45.f;
 }
 
 FQuat UCustomMovementComponent::GetClimbRotation(const float DeltaTime) const
