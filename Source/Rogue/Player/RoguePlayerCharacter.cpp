@@ -108,21 +108,7 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	}
 }
 
-
-void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
-{
-	// get the Vector2D move axis
-	const FVector2D InputValue = Value.Get<FVector2D>();
-
-	// pass the axis values to the move input
-	AddMovementInput(GetActorForwardVector(), InputValue.X);
-	AddMovementInput(GetActorRightVector(), InputValue.Y);
-}
-
-void ARoguePlayerCharacter::JumpInput(const FInputActionValue& Value)
-{
-	Jump();
-}
+void ARoguePlayerCharacter::JumpInput(const FInputActionValue& Value) {Jump();}
 
 void ARoguePlayerCharacter::LookInput(const FInputActionValue& Value)
 {
@@ -138,12 +124,40 @@ void ARoguePlayerCharacter::LookInput(const FInputActionValue& Value)
 	}
 }
 
+void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
+{
+	if (!CustomMovementComponent) return;
+	if (CustomMovementComponent->IsClimbing())
+	{
+		HandleClimbMovementInput(Value);
+	}
+	else
+	{
+		HandleGroundMovementInput(Value);
+	}
+
+	/**
+	* IA_Move mappings:
+		W (Forward)
+			Modifiers (1): Swizzle Input Axis Values
+
+		S (Backward)
+			Modifiers (2): Swizzle Input Axis Values, then Negate
+
+		A (Left)
+			Modifiers (1): Negate
+
+		D (Right)
+			Modifiers (0): (Delete any existing modifiers so the array is empty)
+	 */
+}
 
 void ARoguePlayerCharacter::HandleGroundMovementInput(const FInputActionValue & Value)
 {
 	// input is a Vector2D
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
+	//this logic expects Y to drive Forward/Backward and X to drive Left/Right.
 	if (Controller != nullptr)
 	{
 		// find out which way is forward

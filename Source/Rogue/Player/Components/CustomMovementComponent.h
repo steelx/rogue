@@ -32,21 +32,34 @@ public:
 	void RequestHopping();
 	FVector GetUnrotatedClimbVelocity() const;
 	bool IsClimbing() const;
+
 	FORCEINLINE FVector GetClimbableSurfaceNormal() const {return CurrentClimbableSurfaceNormal;}
 
 protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
+	virtual float GetMaxSpeed() const override;
+	virtual float GetMaxAcceleration() const override;
 
 #pragma region Climbing
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement: Climbing",meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	TArray<TEnumAsByte<EObjectTypeQuery> > ClimbSurfaceTraceTypes;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement: Climbing",meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float ClimbCapsuleTraceRadius = 50.f;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement: Climbing",meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float ClimbCapsuleTraceHalfHeight = 72.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float MaxBreakClimbDeceleration = 400.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float MaxClimbAcceleration = 300.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float MaxClimbSpeed = 100.f;
 
 #pragma endregion
 
@@ -60,9 +73,13 @@ protected:
 	bool CanStartClimbing();
 	void StartClimbing();
 	void StopClimbing();
+	void PhysicsClimb(const float DeltaTime, const int32 Iterations);
+	void ProcessClimbableSurfaceInfo();
+	FQuat GetClimbRotation(const float DeltaTime) const;
+	void SnapMovementToClimbableSurfaces(const float DeltaTime) const;
 
 private:
-	TArray<FHitResult> ClimbableSurfacesTracedResults;
+	TArray<FHitResult> ClimbableSurfacesTracedResults;// result from DoCapsuleTraceMultiByObject(...)
 	FVector CurrentClimbableSurfaceLocation;
 	FVector CurrentClimbableSurfaceNormal;
 

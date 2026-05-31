@@ -127,12 +127,12 @@ protected:
 private:
 	/** Called from Input Actions for movement input */
 	void MoveInput(const FInputActionValue& Value);
-	void JumpInput(const FInputActionValue& Value);
-
-	/** Called from Input Actions for looking input */
-	void LookInput(const FInputActionValue& Value);
 	void HandleGroundMovementInput(const FInputActionValue& Value);
 	void HandleClimbMovementInput(const FInputActionValue& Value);
+
+	void JumpInput(const FInputActionValue& Value);
+	void LookInput(const FInputActionValue& Value);
+
 	void OnClimbActionStarted(const FInputActionValue& Value);
 	void OnClimbHopActionStarted(const FInputActionValue& Value);
 
