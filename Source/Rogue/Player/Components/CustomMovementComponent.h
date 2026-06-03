@@ -24,6 +24,7 @@ class ROGUE_API UCustomMovementComponent : public UCharacterMovementComponent
 	GENERATED_BODY()
 
 public:
+	UCustomMovementComponent();
 	FOnEnterClimbState OnEnterClimbStateDelegate;
 	FOnExitClimbState OnExitClimbStateDelegate;
 

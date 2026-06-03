@@ -35,6 +35,7 @@ public:
 
 	URogAbilitySystemComponent* GetRogAbilitySystemComponent() const;
 	URogAttributeSet* GetAttributeSet() const;
+	FORCEINLINE UCustomMovementComponent* GetCustomMovementComponent() const { return CustomMovementComponent; }
 protected:
 
 	// Assign PlayerStartupDataBase which will call prototype DataAsset_PlayerStartupData::GiveToAbilitySystemComponent

@@ -27,7 +27,7 @@ ARoguePlayerCharacter::ARoguePlayerCharacter(const FObjectInitializer& ObjectIni
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->SetupAttachment(RootComponent);
-	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->bUsePawnControlRotation = true;// true; tells the camera to follow the mouse.
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
@@ -181,6 +181,7 @@ void ARoguePlayerCharacter::HandleClimbMovementInput(const FInputActionValue & V
 	// input is a Vector2D
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
+	// This is Up Vector, hence pressing W will move Upwards
 	const FVector ForwardDirection = FVector::CrossProduct(
 		-CustomMovementComponent->GetClimbableSurfaceNormal(),
 		GetActorRightVector()

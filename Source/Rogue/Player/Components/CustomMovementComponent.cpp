@@ -9,6 +9,14 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 
+
+UCustomMovementComponent::UCustomMovementComponent()
+{
+	bOrientRotationToMovement = true;
+	bUseControllerDesiredRotation = true;
+	RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+}
+
 void UCustomMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	if (IsClimbing())
