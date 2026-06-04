@@ -29,6 +29,7 @@ void URogCharacterAnimInst::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	UpdateShouldMove();
 	UpdateIsFalling();
 	UpdateIsClimbing();
+	UpdateClimbVelocity();
 
 	// Strafing if we are not auto-orienting to movement and we use controller yaw
 	bIsStrafing = OwningCharacter->bUseControllerRotationYaw && !CharMovementComp->bOrientRotationToMovement;
@@ -152,6 +153,11 @@ void URogCharacterAnimInst::UpdateIsFalling()
 void URogCharacterAnimInst::UpdateIsClimbing()
 {
 	bIsClimbing = CharMovementComp->IsClimbing();
+}
+
+void URogCharacterAnimInst::UpdateClimbVelocity()
+{
+	ClimbVelocity = CharMovementComp->GetUnrotatedClimbVelocity();
 }
 
 /*

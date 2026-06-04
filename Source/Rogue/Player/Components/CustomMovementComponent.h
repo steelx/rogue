@@ -52,6 +52,15 @@ protected:
 	TArray<TEnumAsByte<EObjectTypeQuery> > ClimbSurfaceTraceTypes;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float MaxClimbSpeed = 100.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float ClimbCapsuleHalfHeight = 48.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
+	float DefaultCapsuleHalfHeight = 92.f;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float ClimbCapsuleTraceRadius = 50.f;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
@@ -62,9 +71,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float MaxClimbAcceleration = 300.f;
-
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
-	float MaxClimbSpeed = 100.f;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement")
 	TObjectPtr<UAnimMontage> IdleToClimbMontage;

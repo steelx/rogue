@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PhysicsVolume.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -31,12 +32,17 @@ void UCustomMovementComponent::BeginPlay()
 
 void UCustomMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
+	const float HalfHeightDelta = DefaultCapsuleHalfHeight - ClimbCapsuleHalfHeight;
+
 	if (IsClimbing())
 	{
 		bOrientRotationToMovement = false;
 		bUseControllerDesiredRotation = false;
 		CharacterOwner->bUseControllerRotationYaw = false;
-		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(48.f);
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(ClimbCapsuleHalfHeight);
+
+		// Shift mesh down so the smaller capsule sits higher (upper-body aligned)
+		CharacterOwner->GetMesh()->AddLocalOffset(FVector(0.f, 0.f, -HalfHeightDelta));
 	}
 
 	// Just stopped Climbing
@@ -44,7 +50,10 @@ void UCustomMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovem
 	{
 		bOrientRotationToMovement = true;
 		CharacterOwner->bUseControllerRotationYaw = true;
-		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(96.f);
+		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(DefaultCapsuleHalfHeight);
+
+		// Restore mesh to its original position
+		CharacterOwner->GetMesh()->AddLocalOffset(FVector(0.f, 0.f, HalfHeightDelta));
 
 		const FRotator DirtyRotation = UpdatedComponent->GetComponentRotation();
 		const FRotator CleanUpRotation = FRotator(0, DirtyRotation.Yaw, 0);
@@ -95,7 +104,7 @@ void UCustomMovementComponent::RequestHopping()
 
 FVector UCustomMovementComponent::GetUnrotatedClimbVelocity() const
 {
-	return FVector::ZeroVector;
+	return UKismetMathLibrary::Quat_UnrotateVector(UpdatedComponent->GetComponentQuat(), Velocity);
 }
 
 bool UCustomMovementComponent::IsClimbing() const

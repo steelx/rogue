@@ -98,11 +98,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AnimData", meta = (AllowPrivateAccess=true))
 	bool bIsClimbing;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AnimData", meta = (AllowPrivateAccess=true))
+	FVector ClimbVelocity;
+
 	void UpdateGroundSpeed();
 	void UpdateAirSpeed();
 	void UpdateShouldMove();
 	void UpdateIsFalling();
 	void UpdateIsClimbing();
+	void UpdateClimbVelocity();
 	float ComputeMovementDirection() const;
 	bool IsMoving() const;
 };
