@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CustomMovementComponent.generated.h"
 
+class UAnimInstance;
+class UAnimMontage;
+
 DECLARE_DELEGATE(FOnEnterClimbState)
 DECLARE_DELEGATE(FOnExitClimbState)
 
@@ -37,6 +40,7 @@ public:
 	FORCEINLINE FVector GetClimbableSurfaceNormal() const {return CurrentClimbableSurfaceNormal;}
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual float GetMaxSpeed() const override;
@@ -62,6 +66,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float MaxClimbSpeed = 100.f;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement")
+	TObjectPtr<UAnimMontage> IdleToClimbMontage;
+
 #pragma endregion
 
 	/**
@@ -79,6 +86,10 @@ protected:
 	bool CheckShouldStopClimbing() const;
 	FQuat GetClimbRotation(const float DeltaTime) const;
 	void SnapMovementToClimbableSurfaces(const float DeltaTime) const;
+	void PlayClimbMontage(UAnimMontage* MontageToPlay) const;
+
+	UFUNCTION()
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	TArray<FHitResult> ClimbableSurfacesTracedResults;// result from DoCapsuleTraceMultiByObject(...)
@@ -87,9 +98,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UAnimInstance> OwningPlayerAnimInstance;
-
-	UPROPERTY()
-	TObjectPtr<ACharacter> OwningPlayerCharacter;
 
 	bool bIsClimbing {false};
 

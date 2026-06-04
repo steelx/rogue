@@ -25,12 +25,18 @@ ARoguePlayerCharacter::ARoguePlayerCharacter(const FObjectInitializer& ObjectIni
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// Don't rotate when the controller rotates. Let that just affect the camera.
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->SetupAttachment(RootComponent);
-	SpringArmComponent->bUsePawnControlRotation = true;// true; tells the camera to follow the mouse.
+	SpringArmComponent->bUsePawnControlRotation = true;// true; Rotate the arm based on the controller
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+	CameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	CustomMovementComponent = Cast<UCustomMovementComponent>(GetCharacterMovement());
 }

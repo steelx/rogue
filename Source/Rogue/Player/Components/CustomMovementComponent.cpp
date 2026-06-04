@@ -17,16 +17,29 @@ UCustomMovementComponent::UCustomMovementComponent()
 	RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 }
 
+void UCustomMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	OwningPlayerAnimInstance = CharacterOwner->GetMesh()->GetAnimInstance();
+	if (OwningPlayerAnimInstance)
+	{
+		OwningPlayerAnimInstance->OnMontageEnded.AddDynamic(this, &UCustomMovementComponent::OnMontageEnded);
+		OwningPlayerAnimInstance->OnMontageBlendingOut.AddDynamic(this, &UCustomMovementComponent::OnMontageEnded);
+	}
+}
+
 void UCustomMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	if (IsClimbing())
 	{
 		bOrientRotationToMovement = false;
+		bUseControllerDesiredRotation = false;
 		CharacterOwner->bUseControllerRotationYaw = false;
 		CharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(48.f);
 	}
 
-	// Just starting Climbing
+	// Just stopped Climbing
 	else if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == ECustomMovementMode::MOVE_Climb)
 	{
 		bOrientRotationToMovement = true;
@@ -66,24 +79,14 @@ float UCustomMovementComponent::GetMaxAcceleration() const
 
 void UCustomMovementComponent::ToggleClimbing(const bool bEnableClimb)
 {
-	if (!bEnableClimb)
+	if (bEnableClimb && CanStartClimbing())
 	{
-		// Stop Climb
-		UE_LOG(LogTemp, Warning, TEXT("--> Stop Climbing <--"));
-		StopClimbing();
+		PlayClimbMontage(IdleToClimbMontage);
 		return;
 	}
 
-	if (CanStartClimbing())
-	{
-		// Start climb
-		UE_LOG(LogTemp, Warning, TEXT("++> Starting Climbing <++"));
-		StartClimbing();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("<-- Stopping Climbing! -->"));
-	}
+	StopClimbing();
+	UE_LOG(LogTemp, Warning, TEXT("<-- Stopping Climbing! -->"));
 }
 
 void UCustomMovementComponent::RequestHopping()
@@ -134,6 +137,7 @@ bool UCustomMovementComponent::CanStartClimbing()
 void UCustomMovementComponent::StartClimbing()
 {
 	SetMovementMode(MOVE_Custom, ECustomMovementMode::MOVE_Climb);
+	UE_LOG(LogTemp, Warning, TEXT("Starting Climbing Movement Mode: MOVE_Climb"));
 }
 
 void UCustomMovementComponent::StopClimbing()
@@ -222,9 +226,10 @@ bool UCustomMovementComponent::CheckShouldStopClimbing() const
 FQuat UCustomMovementComponent::GetClimbRotation(const float DeltaTime) const
 {
 	const FQuat CurrentQuat = UpdatedComponent->GetComponentQuat();
-	if (HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocity()) return CurrentQuat;
-
 	const FQuat TargetQuat = FRotationMatrix::MakeFromX(-CurrentClimbableSurfaceNormal).ToQuat();
+
+	if (HasAnimRootMotion() || CurrentRootMotion.HasOverrideVelocity()) return TargetQuat;
+
 	return FMath::QInterpTo(CurrentQuat, TargetQuat, DeltaTime, 5.f);
 }
 
@@ -236,6 +241,19 @@ void UCustomMovementComponent::SnapMovementToClimbableSurfaces(const float Delta
 	const FVector SnapVector = -CurrentClimbableSurfaceNormal * ProjectedCharacterToSurface.Length();
 
 	UpdatedComponent->MoveComponent(SnapVector*DeltaTime*MaxClimbSpeed, UpdatedComponent->GetComponentQuat(), true);
+}
+
+void UCustomMovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay) const
+{
+	if (!MontageToPlay || !OwningPlayerAnimInstance) return;
+	if (OwningPlayerAnimInstance->IsAnyMontagePlaying()) return;
+
+	OwningPlayerAnimInstance->Montage_Play(MontageToPlay);
+}
+
+void UCustomMovementComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if(Montage == IdleToClimbMontage) StartClimbing();
 }
 
 TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape) const
