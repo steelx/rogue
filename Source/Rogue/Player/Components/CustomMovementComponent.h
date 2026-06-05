@@ -45,6 +45,7 @@ protected:
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual float GetMaxSpeed() const override;
 	virtual float GetMaxAcceleration() const override;
+	virtual FVector ConstrainAnimRootMotionVelocity(const FVector& RootMotionVelocity, const FVector& CurrentVelocity) const override;
 
 #pragma region Climbing
 
@@ -73,8 +74,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float MaxClimbAcceleration = 300.f;
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Animations")
 	TObjectPtr<UAnimMontage> IdleToClimbMontage;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Animations")
+	TObjectPtr<UAnimMontage> ClimbToTopMontage;
 
 #pragma endregion
 
@@ -84,7 +88,7 @@ protected:
 	 * @return True if at least one climbable surface was detected.
 	 */
 	bool TraceClimbableSurfaces();
-	bool TraceFromEyeHeight(const float TraceDistance, const float StartOffset = 0);
+	FHitResult DoTraceFromEyeHeight(const float TraceDistance, const float StartOffset = 0, const bool bShowDebugShape = false);
 	bool CanStartClimbing();
 	void StartClimbing();
 	void StopClimbing();

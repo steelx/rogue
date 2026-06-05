@@ -87,6 +87,16 @@ float UCustomMovementComponent::GetMaxAcceleration() const
 	return Super::GetMaxAcceleration();
 }
 
+FVector UCustomMovementComponent::ConstrainAnimRootMotionVelocity(const FVector& RootMotionVelocity, const FVector& CurrentVelocity) const
+{
+	// e.g. when we reach top we call StopClimbing which will fall player off ledge, we don't want that;
+	// let Root Motion Montage to handle the Velocity instead
+	const bool bIsPlayingRmMontage = IsFalling() && OwningPlayerAnimInstance && OwningPlayerAnimInstance->IsAnyMontagePlaying();
+	if (bIsPlayingRmMontage) return RootMotionVelocity;
+
+	return Super::ConstrainAnimRootMotionVelocity(RootMotionVelocity, CurrentVelocity);
+}
+
 void UCustomMovementComponent::ToggleClimbing(const bool bEnableClimb)
 {
 	if (bEnableClimb && CanStartClimbing())
@@ -124,22 +134,22 @@ bool UCustomMovementComponent::TraceClimbableSurfaces()
 	return !ClimbableSurfacesTracedResults.IsEmpty();
 }
 
-bool UCustomMovementComponent::TraceFromEyeHeight(const float TraceDistance, const float StartOffset)
+FHitResult UCustomMovementComponent::DoTraceFromEyeHeight(const float TraceDistance, const float StartOffset, const bool bShowDebugShape)
 {
 	const FVector Location = UpdatedComponent->GetComponentLocation();
 	const FVector EyeHeightOffset = UpdatedComponent->GetUpVector() * (CharacterOwner->BaseEyeHeight + StartOffset);
 	const FVector Start = Location + EyeHeightOffset;
 	const FVector End = Start + UpdatedComponent->GetForwardVector() * TraceDistance;
 
-	const FHitResult Hit = DoLineTraceSingleByObject(Start, End);
-	return Hit.bBlockingHit;
+	const FHitResult Hit = DoLineTraceSingleByObject(Start, End, bShowDebugShape);
+	return Hit;
 }
 
 bool UCustomMovementComponent::CanStartClimbing()
 {
 	if (IsFalling()) return false;
 	if (!TraceClimbableSurfaces()) return false;
-	if (!TraceFromEyeHeight(100.f, 15.f)) return false;
+	if (!DoTraceFromEyeHeight(100.f, 15.f).bBlockingHit) return false;
 
 	return true;
 }
@@ -177,7 +187,6 @@ void UCustomMovementComponent::PhysicsClimb(const float DeltaTime, const int32 I
 
 	if( !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity() )
 	{
-		//TODO: Define max climb speed and acceleration
 		CalcVelocity(DeltaTime, 0, true, MaxBreakClimbDeceleration);
 	}
 
@@ -203,6 +212,12 @@ void UCustomMovementComponent::PhysicsClimb(const float DeltaTime, const int32 I
 
 	/** 2. Snap movement to climbable surfaces **/
 	SnapMovementToClimbableSurfaces(DeltaTime);
+
+	if (CheckHasReachedTop())
+	{
+		StopClimbing();
+		PlayClimbMontage(ClimbToTopMontage);
+	}
 }
 
 void UCustomMovementComponent::ProcessClimbableSurfaceInfo()
@@ -261,6 +276,20 @@ bool UCustomMovementComponent::CheckHasReachedFloor()
 
 bool UCustomMovementComponent::CheckHasReachedTop()
 {
+	const FHitResult LedgeResult = DoTraceFromEyeHeight(100.f, 50.f, true);
+	const bool bMovingUpward = GetUnrotatedClimbVelocity().Z > 10.f;
+	// False means no climbable Surface on Eye level
+	if (!LedgeResult.bBlockingHit && bMovingUpward)
+	{
+		// 2nd Line trace from the End of HitResult to downwards
+		const FVector WalkableSurfaceTraceStart = LedgeResult.TraceEnd;
+		const FVector Down = -UpdatedComponent->GetUpVector();
+		const FVector End = WalkableSurfaceTraceStart + Down*50.f;
+
+		const FHitResult WalkableSurfaceHit = DoLineTraceSingleByObject(WalkableSurfaceTraceStart, End, true);
+		if (WalkableSurfaceHit.bBlockingHit) return true;
+	}
+
 	return false;
 }
 
@@ -295,6 +324,7 @@ void UCustomMovementComponent::PlayClimbMontage(UAnimMontage* MontageToPlay) con
 void UCustomMovementComponent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if(Montage == IdleToClimbMontage) StartClimbing();
+	else SetMovementMode(MOVE_Walking);
 }
 
 TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape)
