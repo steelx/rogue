@@ -4,6 +4,7 @@
 #include "CustomMovementComponent.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Core/RogGameFunctions.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PhysicsVolume.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -118,7 +119,7 @@ bool UCustomMovementComponent::TraceClimbableSurfaces()
 	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
 	const FVector End = Start + UpdatedComponent->GetForwardVector();
 
-	ClimbableSurfacesTracedResults = DoCapsuleTraceMultiByObject(Start, End, true);
+	ClimbableSurfacesTracedResults = DoCapsuleTraceMultiByObject(Start, End, false);
 
 	return !ClimbableSurfacesTracedResults.IsEmpty();
 }
@@ -146,7 +147,7 @@ bool UCustomMovementComponent::CanStartClimbing()
 void UCustomMovementComponent::StartClimbing()
 {
 	SetMovementMode(MOVE_Custom, ECustomMovementMode::MOVE_Climb);
-	UE_LOG(LogTemp, Warning, TEXT("Starting Climbing Movement Mode: MOVE_Climb"));
+	// UE_LOG(LogTemp, Warning, TEXT("Starting Climbing Movement Mode: MOVE_Climb"));
 }
 
 void UCustomMovementComponent::StopClimbing()
@@ -167,7 +168,7 @@ void UCustomMovementComponent::PhysicsClimb(const float DeltaTime, const int32 I
 	ProcessClimbableSurfaceInfo();
 
 	/** 2. Check if we should stop Climbing **/
-	if (CheckShouldStopClimbing())
+	if (CheckShouldStopClimbing() || CheckHasReachedFloor())
 	{
 		StopClimbing();
 	}
@@ -232,6 +233,37 @@ bool UCustomMovementComponent::CheckShouldStopClimbing() const
 	return DegreesSlope <= 45.f;
 }
 
+bool UCustomMovementComponent::CheckHasReachedFloor()
+{
+	const FVector Down = -UpdatedComponent->GetUpVector();
+	const FVector StartOffset = Down * 50.f;
+	const FVector Start = UpdatedComponent->GetComponentLocation() + StartOffset;
+	const FVector End = Start + Down;
+
+	const TArray<FHitResult> PossibleFloorHits = DoCapsuleTraceMultiByObject(Start, End);
+
+	if (PossibleFloorHits.IsEmpty()) return false;
+
+	for (const FHitResult& Hit : PossibleFloorHits)
+	{
+		// Surface is horizontal (floor-like)
+		const bool bIsHorizontalSurface = FVector::Parallel(-Hit.ImpactNormal, FVector::UpVector);
+		if (!bIsHorizontalSurface) continue;
+
+		// UE_LOG(LogTemp, Error, TEXT("Found a horizontal surface for the floor!"));
+		// Moving downward & already stopped near the floor
+		const bool bMovingDownward = GetUnrotatedClimbVelocity().Z < -10.f;
+		if (bMovingDownward && bIsHorizontalSurface) return true;
+	}
+
+	return false;
+}
+
+bool UCustomMovementComponent::CheckHasReachedTop()
+{
+	return false;
+}
+
 FQuat UCustomMovementComponent::GetClimbRotation(const float DeltaTime) const
 {
 	const FQuat CurrentQuat = UpdatedComponent->GetComponentQuat();
@@ -265,36 +297,14 @@ void UCustomMovementComponent::OnMontageEnded(UAnimMontage* Montage, bool bInter
 	if(Montage == IdleToClimbMontage) StartClimbing();
 }
 
-TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape) const
+TArray<FHitResult> UCustomMovementComponent::DoCapsuleTraceMultiByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape)
 {
-	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
-	if (bShowDebugShape)
-	{
-		DrawDebugType = bDrawPersistentShape ? EDrawDebugTrace::Persistent : EDrawDebugTrace::ForOneFrame;
-	}
-	const TArray<AActor*> ActorsToIgnore;
-	TArray<FHitResult> OutCapsuleTrace;
-
-	UKismetSystemLibrary::CapsuleTraceMultiForObjects(
-		this, Start, End, ClimbCapsuleTraceRadius, ClimbCapsuleTraceHalfHeight, ClimbSurfaceTraceTypes,
-		false, ActorsToIgnore, DrawDebugType, OutCapsuleTrace, true);
-
-	return OutCapsuleTrace;
+	const TArray<AActor*>& ActorsToIgnore = { CharacterOwner };
+	return URogGameFunctions::DoCapsuleTraceMultiByObject(this, Start, End, ClimbSurfaceTraceTypes, ActorsToIgnore, ClimbCapsuleTraceRadius, ClimbCapsuleHalfHeight, bShowDebugShape, bDrawPersistentShape);
 }
 
-FHitResult UCustomMovementComponent::DoLineTraceSingleByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape) const
+FHitResult UCustomMovementComponent::DoLineTraceSingleByObject(const FVector& Start, const FVector& End, const bool bShowDebugShape, const bool bDrawPersistentShape)
 {
-	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
-	if (bShowDebugShape)
-	{
-		DrawDebugType = bDrawPersistentShape ? EDrawDebugTrace::Persistent : EDrawDebugTrace::ForOneFrame;
-	}
-	const TArray<AActor*> ActorsToIgnore;
-	FHitResult OutLineTrace;
-
-	UKismetSystemLibrary::LineTraceSingleForObjects(
-		this, Start, End, ClimbSurfaceTraceTypes, false, ActorsToIgnore,
-		DrawDebugType, OutLineTrace, true);
-
-	return OutLineTrace;
+	const TArray<AActor*>& ActorsToIgnore = { CharacterOwner };
+	return URogGameFunctions::DoLineTraceSingleByObject(this, Start, End, ClimbSurfaceTraceTypes, ActorsToIgnore, bShowDebugShape, bDrawPersistentShape);
 }

@@ -48,8 +48,9 @@ protected:
 
 #pragma region Climbing
 
+	// Update the Array with Wall Type and Floor Type (e.g. ClimbableObj, WorldStatic)
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
-	TArray<TEnumAsByte<EObjectTypeQuery> > ClimbSurfaceTraceTypes;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ClimbSurfaceTraceTypes;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Character Movement|Climbing")
 	float MaxClimbSpeed = 100.f;
@@ -90,6 +91,8 @@ protected:
 	void PhysicsClimb(const float DeltaTime, const int32 Iterations);
 	void ProcessClimbableSurfaceInfo();
 	bool CheckShouldStopClimbing() const;
+	bool CheckHasReachedFloor();
+	bool CheckHasReachedTop();
 	FQuat GetClimbRotation(const float DeltaTime) const;
 	void SnapMovementToClimbableSurfaces(const float DeltaTime) const;
 	void PlayClimbMontage(UAnimMontage* MontageToPlay) const;
@@ -107,7 +110,7 @@ private:
 
 	bool bIsClimbing {false};
 
-	TArray<FHitResult> DoCapsuleTraceMultiByObject(const FVector & Start, const FVector & End, const bool bShowDebugShape = false, const bool bDrawPersistentShape = false) const;
-	FHitResult DoLineTraceSingleByObject(const FVector & Start, const FVector & End, const bool bShowDebugShape = false, const bool bDrawPersistentShape = false) const;
+	TArray<FHitResult> DoCapsuleTraceMultiByObject(const FVector & Start, const FVector & End, const bool bShowDebugShape = false, const bool bDrawPersistentShape = false);
+	FHitResult DoLineTraceSingleByObject(const FVector & Start, const FVector & End, const bool bShowDebugShape = false, const bool bDrawPersistentShape = false);
 
 };
