@@ -4,9 +4,9 @@
 #include "RoguePlayerController.h"
 
 #include "EnhancedInputSubsystems.h"
-#include "RogInteractionComponent.h"
 #include "RoguePlayerCharacter.h"
 #include "AbilitySystem/RogAbilitySystemComponent.h"
+#include "Components/RogInteractionComponent.h"
 #include "Core/MyTags.h"
 #include "Core/Components/RogInputComponent.h"
 

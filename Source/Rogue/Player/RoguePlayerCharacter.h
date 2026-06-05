@@ -6,6 +6,7 @@
 #include "Core/RogBaseCharacter.h"
 #include "RoguePlayerCharacter.generated.h"
 
+class UCustomMovementComponent;
 class UDataAsset_StartupDataBase;
 class URogAbilitySystemComponent;
 class URogAttributeSet;
@@ -24,8 +25,7 @@ class ROGUE_API ARoguePlayerCharacter : public ARogBaseCharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	ARoguePlayerCharacter();
+	ARoguePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
@@ -35,6 +35,7 @@ public:
 
 	URogAbilitySystemComponent* GetRogAbilitySystemComponent() const;
 	URogAttributeSet* GetAttributeSet() const;
+	FORCEINLINE UCustomMovementComponent* GetCustomMovementComponent() const { return CustomMovementComponent; }
 protected:
 
 	// Assign PlayerStartupDataBase which will call prototype DataAsset_PlayerStartupData::GiveToAbilitySystemComponent
@@ -81,6 +82,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCustomMovementComponent> CustomMovementComponent;
 #pragma endregion  Components
 
 #pragma region InputActions
@@ -96,6 +100,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
+	TObjectPtr<UInputAction> ClimbMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
+	TObjectPtr<UInputAction> ClimbAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category ="Input")
+	TObjectPtr<UInputAction> ClimbHopAction;
+
 	UPROPERTY(EditAnywhere, Category ="Input")
 	TObjectPtr<UInputAction> PrimaryAttackAction;
 
@@ -106,14 +119,23 @@ protected:
 	TObjectPtr<UInputAction> TeleportAction;
 #pragma endregion InputActions
 
+	// void OnPlayerEnterClimbState();
+	// void OnPlayerExitClimbState();
+	//
+	// void AddInputMappingContext(UInputMappingContext* ContextToAdd,int32 InPriority);
+	// void RemoveInputMappingContext(UInputMappingContext* ContextToAdd);
 
 private:
 	/** Called from Input Actions for movement input */
 	void MoveInput(const FInputActionValue& Value);
-	void JumpInput(const FInputActionValue& Value);
+	void HandleGroundMovementInput(const FInputActionValue& Value);
+	void HandleClimbMovementInput(const FInputActionValue& Value);
 
-	/** Called from Input Actions for looking input */
+	void JumpInput(const FInputActionValue& Value);
 	void LookInput(const FInputActionValue& Value);
+
+	void OnClimbActionStarted(const FInputActionValue& Value);
+	void OnClimbHopActionStarted(const FInputActionValue& Value);
 
 	void HandlePrimaryAttack();
 	void HandleSuperAttack();

@@ -9,6 +9,7 @@
 #include "RogPlayerState.h"
 #include "AbilitySystem/RogAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CustomMovementComponent.h"
 #include "Core/RogueGameTypes.h"
 #include "DataAssets/StartupData/DataAsset_StartupDataBase.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -19,18 +20,25 @@
 
 TAutoConsoleVariable<bool> CVarLineTraceDebugDrawing(TEXT("game.lineTrace.DebugDraw"), false, TEXT("Enable line trace drawing. (0 = off, 1 = enabled)"), ECVF_Cheat);
 
-// Sets default values
-ARoguePlayerCharacter::ARoguePlayerCharacter()
+ARoguePlayerCharacter::ARoguePlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCustomMovementComponent>(CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	// Don't rotate when the controller rotates. Let that just affect the camera.
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->SetupAttachment(RootComponent);
-	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->bUsePawnControlRotation = true;// true; Rotate the arm based on the controller
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+	CameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	CustomMovementComponent = Cast<UCustomMovementComponent>(GetCharacterMovement());
 }
 
 UAbilitySystemComponent* ARoguePlayerCharacter::GetAbilitySystemComponent() const
@@ -95,27 +103,18 @@ void ARoguePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		// Looking/Aiming
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::LookInput);
 
+		// Climbing
+		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Started, this, &ThisClass::OnClimbActionStarted);
+		EnhancedInputComponent->BindAction(ClimbHopAction, ETriggerEvent::Started, this, &ThisClass::OnClimbHopActionStarted);
+
+		// TODO: Move these to IMC_Abilities & GAS Ability
 		EnhancedInputComponent->BindAction(PrimaryAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandlePrimaryAttack);
 		EnhancedInputComponent->BindAction(SuperAttackAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleSuperAttack);
 		EnhancedInputComponent->BindAction(TeleportAction, ETriggerEvent::Triggered, this, &ARoguePlayerCharacter::HandleTeleportAction);
 	}
 }
 
-
-void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
-{
-	// get the Vector2D move axis
-	const FVector2D InputValue = Value.Get<FVector2D>();
-
-	// pass the axis values to the move input
-	AddMovementInput(GetActorForwardVector(), InputValue.X);
-	AddMovementInput(GetActorRightVector(), InputValue.Y);
-}
-
-void ARoguePlayerCharacter::JumpInput(const FInputActionValue& Value)
-{
-	Jump();
-}
+void ARoguePlayerCharacter::JumpInput(const FInputActionValue& Value) {Jump();}
 
 void ARoguePlayerCharacter::LookInput(const FInputActionValue& Value)
 {
@@ -130,6 +129,95 @@ void ARoguePlayerCharacter::LookInput(const FInputActionValue& Value)
 		AddControllerPitchInput(InputValue.Y);
 	}
 }
+
+void ARoguePlayerCharacter::MoveInput(const FInputActionValue& Value)
+{
+	if (!CustomMovementComponent) return;
+	if (CustomMovementComponent->IsClimbing())
+	{
+		HandleClimbMovementInput(Value);
+	}
+	else
+	{
+		HandleGroundMovementInput(Value);
+	}
+
+	/**
+	* IA_Move mappings:
+		W (Forward)
+			Modifiers (1): Swizzle Input Axis Values
+
+		S (Backward)
+			Modifiers (2): Swizzle Input Axis Values, then Negate
+
+		A (Left)
+			Modifiers (1): Negate
+
+		D (Right)
+			Modifiers (0): (Delete any existing modifiers so the array is empty)
+	 */
+}
+
+void ARoguePlayerCharacter::HandleGroundMovementInput(const FInputActionValue & Value)
+{
+	// input is a Vector2D
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	//this logic expects Y to drive Forward/Backward and X to drive Left/Right.
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ARoguePlayerCharacter::HandleClimbMovementInput(const FInputActionValue & Value)
+{
+	// input is a Vector2D
+	const FVector2D MovementVector = Value.Get<FVector2D>();
+
+	// This is Up Vector, hence pressing W will move Upwards
+	const FVector ForwardDirection = FVector::CrossProduct(
+		-CustomMovementComponent->GetClimbableSurfaceNormal(),
+		GetActorRightVector()
+	);
+
+	const FVector RightDirection = FVector::CrossProduct(
+		-CustomMovementComponent->GetClimbableSurfaceNormal(),
+		-GetActorUpVector()
+	);
+
+	// add movement
+	AddMovementInput(ForwardDirection, MovementVector.Y);
+	AddMovementInput(RightDirection, MovementVector.X);
+}
+
+void ARoguePlayerCharacter::OnClimbActionStarted(const FInputActionValue & Value)
+{
+	if(!CustomMovementComponent) return;
+	CustomMovementComponent->ToggleClimbing(!CustomMovementComponent->IsClimbing());
+}
+
+
+void ARoguePlayerCharacter::OnClimbHopActionStarted(const FInputActionValue & Value)
+{
+	if(CustomMovementComponent)
+	{
+		CustomMovementComponent->RequestHopping();
+	}
+}
+
 
 void ARoguePlayerCharacter::HandlePrimaryAttack()
 {

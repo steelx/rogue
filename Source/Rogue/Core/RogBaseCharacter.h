@@ -20,7 +20,7 @@ class ROGUE_API ARogBaseCharacter : public ACharacter, public IAbilitySystemInte
 
 public:
 	// Sets default values for this character's properties
-	ARogBaseCharacter();
+	ARogBaseCharacter(const FObjectInitializer& ObjectInitializer);
 
 	//~Begin IAbilitySystemInterface
 	UFUNCTION(BlueprintCallable)
